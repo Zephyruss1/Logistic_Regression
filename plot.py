@@ -20,7 +20,7 @@ try:
     logreg_sgd_weights, logreg_sgd_objective = pkl.load(open('./results/logreg_sgd.pkl', 'rb'))
     logreg_sgdw_weights, logreg_sgdw_objective = pkl.load(open('./results/logreg_sgdw.pkl', 'rb'))
 except FileNotFoundError:
-    print("File not found. Please run main.py first with relating optimization.")
+    print("[PLOT ERROR]: File not found. Please run main.py first with relating optimization.")
 
 
 def plot_logreg():

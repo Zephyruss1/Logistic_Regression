@@ -2,7 +2,6 @@ import os
 import numpy as np
 import struct
 from array import array
-from sklearn import datasets
 
 current_work_dir = os.path.dirname(__file__)
 # MNIST veri kümesindeki 0 ve 1 rakamları bulunan veriler üzerinden işlem

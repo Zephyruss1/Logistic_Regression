@@ -78,7 +78,7 @@ def main_run():
 
 
         except Exception as e:
-            logger.error("An error occurred: %s", e)
+            logger.error(f"{__file__} | Line: {e.__traceback__.tb_lineno} | An error occurred: {e} ")
 
 
 main_run()
@@ -88,4 +88,4 @@ file_name = './results/{}_{}.pkl'.format('logreg', args.optimizer)
 file_name = os.path.join(current_work_dir, file_name)
 with open(file_name, 'wb') as f:
     pkl.dump([weight_diff_list, obj_diff_list], f)
-plot_logreg()
+# plot_logreg()
