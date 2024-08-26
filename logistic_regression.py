@@ -2,6 +2,7 @@ import numpy as np
 import cvxpy as cp
 import inspect
 import torch
+from scipy.optimize import minimize
 epsilon = 1e-5
 
 
@@ -17,7 +18,7 @@ class LogisticRegression:
         self._weights = np.zeros_like(X_train[0])
         self.lr = args.lr
         self.optimizer = args.optimizer
-
+        self.iter = args.iteration
         self.gamma = args.gamma
 
         print("============= CVX solving =============")
@@ -85,16 +86,18 @@ class LogisticRegression:
         optimizer_methods = {
             "GD": self.gradient(self.weights),
             "ModifiedNewton": self.modified_newton,
+            "ModifiedNewtonArmijo": self.modified_newton_with_armijo,
             "ConjugateGradient": self.conjugate_gradient,
+            "ConjugateGDArmijo": self.conjugate_gradient_with_armijo,
             "LevenbergMarquardt": self.levenberg_marquardt,
             "BFGS": self.BFGS,
+            "LBFGS": self.LBFGS,
             "GDArmijo": self.gradient_descent_with_armijo,
-            "ConjugateGDArmijo": self.conjugate_gradient_with_armijo,
-            "ModifiedNewtonArmijo": self.modified_newton_with_armijo,
             "Adam": self.adam,
             "AdamW": self.adamw,
             "SGD": self.sgd,
-            "SGDW": self.sgdw
+            "SGDW": self.sgdw,
+            "NelderMead": self.nelder_mead
         }
         if self.optimizer == 'GD':
             gradient = self.gradient(self.weights)
@@ -126,7 +129,6 @@ class LogisticRegression:
             self.last_update = gradient
             update_direction = -gradient
         else:
-
             beta = np.dot(gradient, gradient) / np.dot(self.last_update, self.last_update)
             update_direction = -gradient + beta * self.last_update
             self.last_update = gradient
@@ -173,6 +175,37 @@ class LogisticRegression:
         self.last_update = self.weights
         self.last_gradient = gradient
 
+        a, b = self.diff_cal(self.weights)
+        return a, b
+
+    def LBFGS(self, max_iter=100):
+        # DEBUG MODE
+        if not isinstance(self.weights, torch.Tensor):
+            weights = torch.tensor(self.weights, requires_grad=True, dtype=torch.float32)
+
+        try:
+            lbfgs = torch.optim.LBFGS(weights, tolerance_grad=1e-6, max_iter=max_iter)
+        except Exception as e:
+            print(e)
+
+        def closure():
+            lbfgs.zero_grad()
+            loss = torch.tensor(self.objective(weights.detach().numpy()), requires_grad=True)
+            loss.backward()
+            return loss
+
+        try:
+            lbfgs.step(closure)
+            # Convert the weights back to numpy array
+            weights = self.weights.detach().numpy()
+            a, b = self.diff_cal(weights)
+            return a, b
+        except Exception as e:
+            print(e)
+
+    def nelder_mead(self):
+        res = minimize(self.objective, self.weights, method='nelder-mead', options={'maxiter': 1000, 'xatol': 1e-8, 'fatol': 1e-8, 'disp': False})
+        self.weights = res.x
         a, b = self.diff_cal(self.weights)
         return a, b
 
