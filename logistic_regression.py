@@ -47,7 +47,11 @@ class LogisticRegression:
     # sigmoid Function
     def sigmoid(self, input):
         input_clipped = np.clip(input, -500, 500) # Avoid overflow
-        assert input_clipped.shape == input.shape, f"input_clipped.shape: {input_clipped.shape}, input.shape: {input.shape}"
+        assert input_clipped.shape == input.shape, (
+            f"input_clipped.shape: {input_clipped.shape}, "
+            f"input.shape: {input.shape}"
+        )
+
         return 1. / (1. + np.exp(-input_clipped))
 
     def getTest(self):
@@ -60,7 +64,8 @@ class LogisticRegression:
         note that the objective is averaged over all samples
         """
         sigWeights = self.sigmoid(self.X_train @ weights)
-        matGrad = self.Y_train * np.log(sigWeights + epsilon) + (1.0 - self.Y_train) * np.log(1 - sigWeights + epsilon)
+        matGrad = self.Y_train * np.log(sigWeights + epsilon)\
+             + (1.0 - self.Y_train) * np.log(1 - sigWeights + epsilon)
         return - np.sum(matGrad) / self.num_samples + 0.5 * self.gamma * np.linalg.norm(weights) ** 2
 
     def gradient(self, weights):
@@ -129,7 +134,8 @@ class LogisticRegression:
             self.last_update = gradient
             update_direction = -gradient
         else:
-            beta = np.dot(gradient, gradient) / np.dot(self.last_update, self.last_update)
+            beta = np.dot(gradient, gradient) / np.dot(self.last_update,
+                                                        self.last_update)
             update_direction = -gradient + beta * self.last_update
             self.last_update = gradient
 
@@ -153,7 +159,6 @@ class LogisticRegression:
 
     def BFGS(self):
         gradient = self.gradient(self.weights)
-        hessian = self.Hessian(self.weights)
 
         if not hasattr(self, 'B'):
             self.B = np.eye(self.dimension)
@@ -178,33 +183,32 @@ class LogisticRegression:
         a, b = self.diff_cal(self.weights)
         return a, b
 
-    def LBFGS(self, max_iter=100):
-        # DEBUG MODE
+    # DEBUG MODE
+    def LBFGS(self):
         if not isinstance(self.weights, torch.Tensor):
-            weights = torch.tensor(self.weights, requires_grad=True, dtype=torch.float32)
+            self.weights = 0.1 * np.random.randn(self.dimension)
+            self.weights = torch.tensor(self.weights, requires_grad=True,
+                                         dtype=torch.float32)
 
-        try:
-            lbfgs = torch.optim.LBFGS(weights, tolerance_grad=1e-6, max_iter=max_iter)
-        except Exception as e:
-            print(e)
+        lbfgs = torch.optim.LBFGS([self.weights])
 
         def closure():
             lbfgs.zero_grad()
-            loss = torch.tensor(self.objective(weights.detach().numpy()), requires_grad=True)
+            loss = torch.tensor(self.objective(self.weights.detach().numpy()))
+            loss_tensor = torch.tensor(loss, requires_grad=True)
             loss.backward()
-            return loss
-
-        try:
-            lbfgs.step(closure)
-            # Convert the weights back to numpy array
-            weights = self.weights.detach().numpy()
-            a, b = self.diff_cal(weights)
-            return a, b
-        except Exception as e:
-            print(e)
+            return loss_tensor
+        
+        lbfgs.step(closure)
+        # Convert the weights back to numpy array
+        self.weights = self.weights.detach().numpy()
+        a, b = self.diff_cal(self.weights)
+        return a, b
 
     def nelder_mead(self):
-        res = minimize(self.objective, self.weights, method='nelder-mead', options={'maxiter': 1000, 'xatol': 1e-8, 'fatol': 1e-8, 'disp': False})
+        res = minimize(self.objective, self.weights, method='nelder-mead',
+                        options={'maxiter': 1000, 'xatol': 1e-8,
+                                  'fatol': 1e-8, 'disp': False})
         self.weights = res.x
         a, b = self.diff_cal(self.weights)
         return a, b
