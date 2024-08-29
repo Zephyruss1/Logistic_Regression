@@ -24,12 +24,24 @@ def setup_model(setup_data):
     model = LogisticRegression(args=args, X_train=x_train, Y_train=y_train, X_test=x_test)
     return model
 
-# LBFGS
-def test_lbfgs_initialization(setup_model):
-    setup_model.LBFGS()
+def test_nethermead_initialization(setup_model):
+    setup_model.nelder_mead()
 
     # Check if weights are initialized as a torch tensor
-    assert callable(setup_model.LBFGS), "LBFGS method is not implemented"
+    assert callable(setup_model.nelder_mead), "NelderMead method is not implemented"
+
+def test_adamw_initialization(setup_model):
+    setup_model.adamw()
+
+    # Check if weights are initialized as a torch tensor
+    assert callable(setup_model.adamw), "AdamW method is not implemented"
+
+# LBFGS
+# def test_lbfgs_initialization(setup_model):
+#     setup_model.LBFGS()
+
+#     # Check if weights are initialized as a torch tensor
+#     assert callable(setup_model.LBFGS), "LBFGS method is not implemented"
 
 # def test_lbfgs_weight_initialization(setup_model):
 #     setup_model.LBFGS()
@@ -55,11 +67,6 @@ def test_lbfgs_initialization(setup_model):
 #     assert not torch.equal(initial_weights, model.weights), "Weights should be updated after LBFGS execution"
 
 # NetherMead
-def test_nethermead_initialization(setup_model):
-    setup_model.nelder_mead()
-
-    # Check if weights are initialized as a torch tensor
-    assert callable(setup_model.nelder_mead), "NelderMead method is not implemented"
 
 # SGDW
 # def test_sgdw_initialization(setup_model):
