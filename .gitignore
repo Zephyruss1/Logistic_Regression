@@ -7,3 +7,4 @@ Logistic_Regression/main.py:Zone.Identifier
 Logistic_Regression/plot.py:Zone.Identifier
 __pycache__/logistic_regression.cpython-310.pyc
 __pycache__/options.cpython-310.pyc
+test.py
