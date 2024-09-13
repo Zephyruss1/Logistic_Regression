@@ -1,1 +1,7 @@
 myvenv/
+.idea/
+.vscode/
+__pycache__/
+Logistic_Regression/logistic_regression.py:Zone.Identifier
+Logistic_Regression/main.py:Zone.Identifier
+Logistic_Regression/plot.py:Zone.Identifier
