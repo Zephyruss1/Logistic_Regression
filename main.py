@@ -87,4 +87,4 @@ file_name = './results/{}_{}.pkl'.format('logreg', args.optimizer)
 file_name = os.path.join(current_work_dir, file_name)
 with open(file_name, 'wb') as f:
     pkl.dump([weight_diff_list, obj_diff_list], f)
-# plot_logreg()
+plot_logreg()

@@ -44,14 +44,14 @@ class LogisticRegression:
         else:
             raise ValueError("Invalid value for weights.")
 
-    # sigmoid Function
-    def sigmoid(self, input):
+    # sigmoid function
+    @staticmethod
+    def sigmoid(input):
         input_clipped = np.clip(input, -500, 500) # Avoid overflow
         assert input_clipped.shape == input.shape, (
             f"input_clipped.shape: {input_clipped.shape}, "
             f"input.shape: {input.shape}"
         )
-
         return 1. / (1. + np.exp(-input_clipped))
 
     def getTest(self):
@@ -89,20 +89,20 @@ class LogisticRegression:
     def update(self):
         # Optimization: Using mapping
         optimizer_methods = {
-            "GD": self.gradient(self.weights),
-            "ModifiedNewton": self.modified_newton,
-            "ModifiedNewtonArmijo": self.modified_newton_with_armijo,
-            "ConjugateGradient": self.conjugate_gradient,
-            "ConjugateGDArmijo": self.conjugate_gradient_with_armijo,
-            "LevenbergMarquardt": self.levenberg_marquardt,
-            "BFGS": self.BFGS,
-            "LBFGS": self.LBFGS,
-            "GDArmijo": self.gradient_descent_with_armijo,
-            "Adam": self.adam,
-            "AdamW": self.adamw,
-            "SGD": self.sgd,
-            "SGDW": self.sgdw,
-            "NelderMead": self.nelder_mead
+            "GD"                    : self.gradient(self.weights),
+            "ModifiedNewton"        : self.modified_newton,
+            "ModifiedNewtonArmijo"  : self.modified_newton_with_armijo,
+            "ConjugateGradient"     : self.conjugate_gradient,
+            "ConjugateGDArmijo"     : self.conjugate_gradient_with_armijo,
+            "LevenbergMarquardt"    : self.levenberg_marquardt,
+            "BFGS"                  : self.BFGS,
+            "LBFGS"                 : self.LBFGS,
+            "GDArmijo"              : self.gradient_descent_with_armijo,
+            "Adam"                  : self.adam,
+            "AdamW"                 : self.adamw,
+            "SGD"                   : self.sgd,
+            "SGDW"                  : self.sgdw,
+            "NelderMead"            : self.nelder_mead
         }
         if self.optimizer == 'GD':
             gradient = self.gradient(self.weights)
@@ -113,7 +113,6 @@ class LogisticRegression:
         else:
             raise NotImplementedError
         a, b = self.diff_cal(self.weights)
-
         return a, b
 
     def modified_newton(self):
@@ -187,22 +186,11 @@ class LogisticRegression:
     def LBFGS(self):
         if not isinstance(self.weights, torch.Tensor):
             self.weights = 0.1 * np.random.randn(self.dimension)
-            self.weights = torch.tensor(self.weights, requires_grad=True,
-                                         dtype=torch.float32)
 
-        lbfgs = torch.optim.LBFGS([self.weights])
-
-        def closure():
-            lbfgs.zero_grad()
-            loss = torch.tensor(self.objective(self.weights.detach().numpy()))
-            loss_tensor = torch.tensor(loss, requires_grad=True)
-            loss.backward()
-            return loss_tensor
-        
-        lbfgs.step(closure)
-        # Convert the weights back to numpy array
-        self.weights = self.weights.detach().numpy()
-        a, b = self.diff_cal(self.weights)
+        initial_weights = self.weights.detach().numpy() if isinstance(self.weights, torch.Tensor) else self.weights
+        lbfgs = minimize(self.objective, initial_weights, method='L-BFGS-B')
+        self.weights = torch.tensor(lbfgs.x, requires_grad=True, dtype=torch.float32)
+        a, b = self.diff_cal(self.weights.detach().numpy())
         return a, b
 
     def nelder_mead(self):
@@ -262,7 +250,6 @@ class LogisticRegression:
 
         opt_weights = np.array(x.value)
         opt_obj = self.objective(opt_weights)
-
         return opt_weights, opt_obj
 
     def diff_cal(self, weights):
@@ -309,7 +296,6 @@ class LogisticRegression:
         fused_aviable = 'fused' in inspect.signature(torch.optim.AdamW).parameters
         use_fused = fused_aviable and device == 'cuda'
         print(f"using fused adam: {use_fused}")
-        
         return a, b
 
     # UPDATE: SGD optimizer
