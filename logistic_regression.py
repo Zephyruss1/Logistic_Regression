@@ -3,8 +3,8 @@ import cvxpy as cp
 import inspect
 import torch
 from scipy.optimize import minimize
-epsilon = 1e-5
 
+EPSILON = 1e-5
 
 class LogisticRegression:
     def __init__(self, args, X_train, Y_train, X_test):
@@ -64,8 +64,8 @@ class LogisticRegression:
         note that the objective is averaged over all samples
         """
         sigWeights = self.sigmoid(self.X_train @ weights)
-        matGrad = self.Y_train * np.log(sigWeights + epsilon)\
-             + (1.0 - self.Y_train) * np.log(1 - sigWeights + epsilon)
+        matGrad = self.Y_train * np.log(sigWeights + EPSILON)\
+             + (1.0 - self.Y_train) * np.log(1 - sigWeights + EPSILON)
         return - np.sum(matGrad) / self.num_samples + 0.5 * self.gamma * np.linalg.norm(weights) ** 2
 
     def gradient(self, weights):
@@ -182,7 +182,7 @@ class LogisticRegression:
         a, b = self.diff_cal(self.weights)
         return a, b
 
-    # DEBUG MODE
+    # -------------------DEBUG MODE----------------------- #
     def LBFGS(self):
         if not isinstance(self.weights, torch.Tensor):
             self.weights = 0.1 * np.random.randn(self.dimension)
@@ -192,7 +192,7 @@ class LogisticRegression:
         self.weights = torch.tensor(lbfgs.x, requires_grad=True, dtype=torch.float32)
         a, b = self.diff_cal(self.weights.detach().numpy())
         return a, b
-
+    # -------------------DEBUG MODE----------------------- #
     def nelder_mead(self):
         res = minimize(self.objective, self.weights, method='nelder-mead',
                         options={'maxiter': 1000, 'xatol': 1e-8,
@@ -263,7 +263,7 @@ class LogisticRegression:
         return weight_diff, obj_diff
 
     # UPDATE: Adam optimizer
-    def adam(self, beta1=0.9, beta2=0.999, epsilon=1e-8):
+    def adam(self, beta1=0.9, beta2=0.999, EPSILON=1e-8):
         self.t += 1
         gradient = self.gradient(self.weights)
         self.m = beta1 * self.m + (1 - beta1) * gradient
@@ -272,13 +272,13 @@ class LogisticRegression:
         m_hat = self.m / (1 - beta1 ** self.t)
         v_hat = self.v / (1 - beta2 ** self.t)
 
-        self.weights -= self.lr * m_hat / (np.sqrt(v_hat) + epsilon)
+        self.weights -= self.lr * m_hat / (np.sqrt(v_hat) + EPSILON)
 
         a, b = self.diff_cal(self.weights)
         return a, b
 
     # UPDATE: AdamW optimizer
-    def adamw(self, beta1=0.9, beta2=0.999, epsilon=1e-8, weight_decay=0.01, device='cpu'):
+    def adamw(self, beta1=0.9, beta2=0.999, EPSILON=1e-8, weight_decay=0.01, device='cpu'):
         if torch.cuda.is_available() and torch.version.hip is not None:
             device = 'cuda'
         
@@ -290,7 +290,7 @@ class LogisticRegression:
         m_hat = self.m / (1 - beta1 ** self.t)
         v_hat = self.v / (1 - beta2 ** self.t)
 
-        self.weights -= self.lr * m_hat / (np.sqrt(v_hat) + epsilon) + weight_decay * self.weights
+        self.weights -= self.lr * m_hat / (np.sqrt(v_hat) + EPSILON) + weight_decay * self.weights
 
         a, b = self.diff_cal(self.weights)
         fused_aviable = 'fused' in inspect.signature(torch.optim.AdamW).parameters
