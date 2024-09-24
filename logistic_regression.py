@@ -66,7 +66,8 @@ class LogisticRegression:
         sigWeights = self.sigmoid(self.X_train @ weights)
         matGrad = self.Y_train * np.log(sigWeights + EPSILON)\
              + (1.0 - self.Y_train) * np.log(1 - sigWeights + EPSILON)
-        return - np.sum(matGrad) / self.num_samples + 0.5 * self.gamma * np.linalg.norm(weights) ** 2
+        return - np.sum(matGrad) / self.num_samples + 0.5 *\
+            self.gamma * np.linalg.norm(weights) ** 2
 
     def gradient(self, weights):
         """
@@ -84,7 +85,8 @@ class LogisticRegression:
         """
         sigWeights = self.sigmoid(self.X_train @ weights)
         D_diag = np.diag(sigWeights * (1 - sigWeights))
-        return self.X_train.T @ D_diag @ self.X_train / self.num_samples + self.gamma * np.identity(self.dimension)
+        return self.X_train.T @ D_diag @ self.X_train / self.num_samples\
+            + self.gamma * np.identity(self.dimension)
 
     def update(self):
         # Optimization: Using mapping
@@ -187,9 +189,12 @@ class LogisticRegression:
         if not isinstance(self.weights, torch.Tensor):
             self.weights = 0.1 * np.random.randn(self.dimension)
 
-        initial_weights = self.weights.detach().numpy() if isinstance(self.weights, torch.Tensor) else self.weights
-        lbfgs = minimize(self.objective, initial_weights, method='L-BFGS-B')
-        self.weights = torch.tensor(lbfgs.x, requires_grad=True, dtype=torch.float32)
+        initial_weights = self.weights.detach().numpy() if isinstance\
+        (self.weights, torch.Tensor) else self.weights
+        lbfgs = minimize(self.objective, initial_weights,\
+            method='L-BFGS-B')
+        self.weights = torch.tensor(lbfgs.x, requires_grad=True,\
+            dtype=torch.float32)
         a, b = self.diff_cal(self.weights.detach().numpy())
         return a, b
     # -------------------DEBUG MODE----------------------- #
@@ -204,7 +209,8 @@ class LogisticRegression:
     def gradient_descent_with_armijo(self):
         gradient = self.gradient(self.weights)
         direction = -gradient
-        step_size = self.armijo_stepsize_search(gradient, self.weights, direction)
+        step_size = self.armijo_stepsize_search(gradient, self.weights,\
+                                                direction)
         self.weights += step_size * direction
         a, b = self.diff_cal(self.weights)
         return a, b
@@ -213,7 +219,8 @@ class LogisticRegression:
         gradient = self.gradient(self.weights)
         hessian = self.Hessian(self.weights)
         direction = np.linalg.solve(hessian, gradient)
-        step_size = self.armijo_stepsize_search(gradient, self.weights, direction)
+        step_size = self.armijo_stepsize_search(gradient, self.weights,\
+            direction)
         self.weights += step_size * direction
         a, b = self.diff_cal(self.weights)
         return a, b
@@ -221,18 +228,21 @@ class LogisticRegression:
     def conjugate_gradient_with_armijo(self):
         gradient = self.gradient(self.weights)
         direction = -gradient
-        step_size = self.armijo_stepsize_search(gradient, self.weights, direction)
+        step_size = self.armijo_stepsize_search(gradient, self.weights,\
+            direction)
         self.weights += step_size * direction
         a, b = self.diff_cal(self.weights)
         return a, b
 
-    def armijo_stepsize_search(self, gradient, current_point, direction, alpha=1.0, beta=0.5, max_iter=100, c=0.0001):
+    def armijo_stepsize_search(self, gradient, current_point, direction,
+                            alpha=1.0, beta=0.5, max_iter=100, c=0.0001):
         t = alpha
         iter_count = 0
         while iter_count < max_iter:
             new_point = current_point + t * direction
             new_value = self.objective(new_point)
-            if new_value <= self.objective(current_point) + c * t * np.dot(gradient, direction):
+            if new_value <= self.objective(current_point) + c * t *\
+                np.dot(gradient, direction):
                 return t
             else:
                 t *= beta
@@ -244,8 +254,10 @@ class LogisticRegression:
         use CVXPY to solve optimal solution
         """
         x = cp.Variable(self.dimension)
-        objective = cp.sum(cp.multiply(self.Y_train, self.X_train @ x) - cp.logistic(self.X_train @ x))
-        prob = cp.Problem(cp.Maximize(objective / self.num_samples - 0.5 * self.gamma * cp.norm2(x) ** 2))
+        objective = cp.sum(cp.multiply(self.Y_train, self.X_train @ x)\
+                        - cp.logistic(self.X_train @ x))
+        prob = cp.Problem(cp.Maximize(objective / self.num_samples - 0.5\
+                                    * self.gamma * cp.norm2(x) ** 2))
         prob.solve(solver=cp.ECOS_BB, verbose=False)  # False if not print it
 
         opt_weights = np.array(x.value)
@@ -278,7 +290,8 @@ class LogisticRegression:
         return a, b
 
     # UPDATE: AdamW optimizer
-    def adamw(self, beta1=0.9, beta2=0.999, EPSILON=1e-8, weight_decay=0.01, device='cpu'):
+    def adamw(self, beta1=0.9, beta2=0.999, EPSILON=1e-8, weight_decay=0.01,
+            device='cpu'):
         if torch.cuda.is_available() and torch.version.hip is not None:
             device = 'cuda'
         
@@ -290,7 +303,8 @@ class LogisticRegression:
         m_hat = self.m / (1 - beta1 ** self.t)
         v_hat = self.v / (1 - beta2 ** self.t)
 
-        self.weights -= self.lr * m_hat / (np.sqrt(v_hat) + EPSILON) + weight_decay * self.weights
+        self.weights -= self.lr * m_hat / (np.sqrt(v_hat) + EPSILON)\
+            + weight_decay * self.weights
 
         a, b = self.diff_cal(self.weights)
         fused_aviable = 'fused' in inspect.signature(torch.optim.AdamW).parameters

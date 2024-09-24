@@ -53,8 +53,10 @@ def main_run():
             print("objective error: {:.4e}".format(obj_diff))
 
             Eigvals = np.linalg.eigvals(Model.pre_Hessian)
-            print("\nmax eigenvalue of Hessian:{:.4f}".format(np.max(Eigvals)))
-            print("min eigenvalue of Hessian:{:.4f}".format(np.min(Eigvals)))
+            print("\nmax eigenvalue of Hessian:{:.4f}"\
+                .format(np.max(Eigvals)))
+            print("min eigenvalue of Hessian:{:.4f}"\
+                .format(np.min(Eigvals)))
             
             '''
             update
@@ -78,7 +80,8 @@ def main_run():
             print(percent_correct, 'Accuracy: %')
 
         except Exception as e:
-            logger.error(f"{__file__} | Line: {e.__traceback__.tb_lineno} | An error occurred: {e} ")
+            logger.error(f"{__file__} | Line:\
+                        {e.__traceback__.tb_lineno} | An error occurred: {e} ")
 
 main_run()
 
