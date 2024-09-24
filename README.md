@@ -1,1 +1,1 @@
-Logistic Regression from scratch (Heavy Under Maintance)
+Logistic Regression from scratch
