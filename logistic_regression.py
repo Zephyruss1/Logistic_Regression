@@ -3,6 +3,7 @@ import cvxpy as cp
 import inspect
 import torch
 from scipy.optimize import minimize
+from scipy.special import expit
 
 EPSILON = 1e-5
 
@@ -32,7 +33,6 @@ class LogisticRegression:
         self.v = np.zeros_like(self.weights)
         self.t = 0
 
-    # UPDATE: Added property decorator for weights.
     @property
     def weights(self):
         return self._weights
@@ -44,16 +44,13 @@ class LogisticRegression:
         else:
             raise ValueError("Invalid value for weights.")
 
-    # sigmoid function
     @staticmethod
     def sigmoid(input):
-        input_clipped = np.clip(input, -500, 500) # Avoid overflow
-        assert input_clipped.shape == input.shape, (
-            f"input_clipped.shape: {input_clipped.shape}, "
-            f"input.shape: {input.shape}"
-        )
-        return 1. / (1. + np.exp(-input_clipped))
-
+        try:
+            return expit(input)
+        except OverflowError:
+            return np.where(input > 0, 1.0, 0.0)
+        
     def getTest(self):
         self.test = self.sigmoid(self.X_test @ self.weights)
         return self.test
@@ -274,7 +271,6 @@ class LogisticRegression:
         obj_diff = abs(self.objective(weights) - self.opt_obj)
         return weight_diff, obj_diff
 
-    # UPDATE: Adam optimizer
     def adam(self, beta1=0.9, beta2=0.999, EPSILON=1e-8):
         self.t += 1
         gradient = self.gradient(self.weights)
@@ -289,7 +285,6 @@ class LogisticRegression:
         a, b = self.diff_cal(self.weights)
         return a, b
 
-    # UPDATE: AdamW optimizer
     def adamw(self, beta1=0.9, beta2=0.999, EPSILON=1e-8, weight_decay=0.01,
             device='cpu'):
         if torch.cuda.is_available() and torch.version.hip is not None:
@@ -312,7 +307,6 @@ class LogisticRegression:
         print(f"using fused adam: {use_fused}")
         return a, b
 
-    # UPDATE: SGD optimizer
     def sgd(self):
         gradient = self.gradient(self.weights)
         self.weights -= self.lr * gradient
@@ -320,7 +314,6 @@ class LogisticRegression:
         a, b = self.diff_cal(self.weights)
         return a, b
 
-    # UPDATE: SGDW optimizer
     def sgdw(self, weight_decay=0.01):
         gradient = self.gradient(self.weights)
         self.weights -= self.lr * gradient + weight_decay * self.weights
