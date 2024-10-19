@@ -38,7 +38,33 @@ except FileNotFoundError:
 
 def plot_logreg():
     """
-    logistic regression: weights
+        Plot the logistic regression weights and objective values.
+
+        This function generates and saves plots comparing the weights and objective values
+        of different optimization algorithms used in logistic regression. It reads the
+        precomputed weights and objective values from pickle files and creates visual
+        comparisons. The plots are saved as PNG files in the `./results` directory.
+
+        The function handles the following optimizers:
+        - GD
+        - GDArmijo
+        - ModifiedNewton
+        - ModifiedNewtonArmijo
+        - ConjugateGradient
+        - ConjugateGDArmijo
+        - LevenbergMarquardt
+        - BFGS
+        - Adam
+        - AdamW
+        - SGD
+        - SGDW
+
+        If the required pickle files are not found, it prompts the user to run `main.py`
+        with the appropriate optimization settings.
+
+        Raises:
+            FileNotFoundError: If the required pickle files are not found.
+            ValueError: If an invalid optimizer is specified in the arguments.
     """
     args = args_parser()
     rcParams.update({'text.usetex': False})
