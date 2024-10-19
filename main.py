@@ -26,7 +26,6 @@ def elapsed_time(func):
         print("Elapsed time: ", end_time - start_time)
         print("===" * 15)
         return result
-
     return wrapper
 
 weight_diff_list = []
@@ -57,10 +56,7 @@ def main_run():
                 .format(np.max(Eigvals)))
             print("min eigenvalue of Hessian:{:.4f}"\
                 .format(np.min(Eigvals)))
-            
-            '''
-            update
-            '''
+
             for i in range(args.iteration):
 
                 weight_diff, obj_diff = Model.update()
@@ -73,11 +69,10 @@ def main_run():
                 if weight_diff / np.sqrt(Model.dimension) <= 1e-5:
                     break
 
-            # UPDATE: simplifying the accuracy percent.
             val = Model.getTest() > 0.5
             val2 = y_test > 0.5
             percent_correct = np.mean(val == val2) * 100
-            print(percent_correct, 'Accuracy: %')
+            print('Accuracy: {:.1f}%'.format(percent_correct))
 
         except Exception as e:
             logger.error(f"{__file__} | Line:\
@@ -85,7 +80,6 @@ def main_run():
 
 main_run()
 
-# args = args_parser()
 file_name = './results/{}_{}.pkl'.format('logreg', args.optimizer)
 file_name = os.path.join(current_work_dir, file_name)
 with open(file_name, 'wb') as f:
