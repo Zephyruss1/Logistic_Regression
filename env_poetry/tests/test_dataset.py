@@ -4,16 +4,16 @@ import sys
 sys.path.append("..")
 
 from datasets.data_preprocess import data_preprocess
-from options import args_parser
+from options import arg_parser_for_tests
 
 # Parse arguments with defaults
-args = args_parser()
+known_args = arg_parser_for_tests()
 
 @pytest.fixture
 def setup_data():
     """Fixture to preprocess and return data."""
     # Preprocess data using the default args
-    (x_train, y_train), (x_test, y_test) = data_preprocess(args)
+    (x_train, y_train), (x_test, y_test) = data_preprocess(known_args)
     return (x_train, y_train), (x_test, y_test)
 
 def test_setup_data():
@@ -28,6 +28,13 @@ def test_astype_data(setup_data):
     )
     assert (y_train.dtype == np.uint8 and y_test.dtype == np.uint8), (
         "Data type is not `uint8`"
+    )
+
+def test_shape_data(setup_data):
+    """Check if the shape of the data is correct."""
+    (x_train, y_train), (x_test, y_test) = setup_data
+    assert (x_train.shape == (12665, 785) and x_test.shape == (2115, 785)), (
+        "Data shape is not correct"
     )
 
 if __name__ == "__main__":
