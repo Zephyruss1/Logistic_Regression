@@ -4,16 +4,15 @@ import struct
 from array import array
 
 current_work_dir = os.path.dirname(__file__)
-# MNIST veri kümesindeki 0 ve 1 rakamları bulunan veriler üzerinden işlem
-# gerçekleşecektir.
+
 target_ind_0 = 0
 target_ind_1 = 1
 
 
 class MnistDataloader(object):
-    '''
+    """
     Load MNIST dataset
-    '''
+    """
 
     def __init__(self, training_images_filepath, training_labels_filepath,
                  test_images_filepath, test_labels_filepath):
@@ -53,9 +52,9 @@ class MnistDataloader(object):
 
 
 def mnist_process_data(target_ind_0=0, target_ind_1=1):
-    '''
+    """
     load dataset
-    '''
+    """
     input_path = os.path.join(current_work_dir, './mnist/')
     training_images_filepath = os.path.join(input_path, 'train-images.idx3-ubyte')
     training_labels_filepath = os.path.join(input_path, 'train-labels.idx1-ubyte')
@@ -65,22 +64,22 @@ def mnist_process_data(target_ind_0=0, target_ind_1=1):
                                  test_labels_filepath)
     (x_train, y_train), (x_test, y_test) = Dataloader.load_data()
 
-    '''
-    select target labels
-    '''
+    # select target labels
     y_train_ind_0 = np.where(y_train == target_ind_0)
     y_train_ind_0 = y_train_ind_0[:3001]
     y_train_ind_1 = np.where(y_train == target_ind_1)
     y_train_ind_1 = y_train_ind_1[:3001]
     y_train_ind = np.union1d(y_train_ind_0, y_train_ind_1)
+
     x_train = x_train[y_train_ind]
     y_train = y_train[y_train_ind]
 
     y_test_ind_0 = np.where(y_test == target_ind_0)
     y_test_ind_1 = np.where(y_test == target_ind_1)
     y_test_ind = np.union1d(y_test_ind_0, y_test_ind_1)
-    x_test = x_test[y_test_ind]
+
     y_test = y_test[y_test_ind]
+    x_test = x_test[y_test_ind]
 
     x_train = x_train.reshape(-1, 28 * 28)
     x_test = x_test.reshape(-1, 28 * 28)
@@ -99,12 +98,12 @@ def mnist_process_data(target_ind_0=0, target_ind_1=1):
 
 
 def data_preprocess(args):
-    '''
+    """
     return a tuple: (x_train, y_train), (x_test, y_test)
     each batch has shape: (n, d)
     - n: # of samples
     - d: sample dimension
-    '''
+    """
 
     (x_train, y_train), (x_test, y_test) = mnist_process_data(target_ind_0=target_ind_0, target_ind_1=target_ind_1)
 

@@ -57,7 +57,7 @@ class LogisticRegression:
 
     def objective(self, weights):
         """
-        return the objective value of the problem
+        :return: the objective value of the problem
         note that the objective is averaged over all samples
         """
         sigWeights = self.sigmoid(self.X_train @ weights)
@@ -68,7 +68,7 @@ class LogisticRegression:
 
     def gradient(self, weights):
         """
-        return the gradient of objective function
+        :return: the gradient of objective function
         note that the gradient is averaged over all samples
         """
         sigWeights = self.sigmoid(self.X_train @ weights)
@@ -77,7 +77,7 @@ class LogisticRegression:
 
     def Hessian(self, weights):
         """
-        return the Hessian of objective function
+        :return: the Hessian of objective function
         note that the Hessian is averaged over all samples
         """
         sigWeights = self.sigmoid(self.X_train @ weights)
@@ -86,7 +86,6 @@ class LogisticRegression:
             + self.gamma * np.identity(self.dimension)
 
     def update(self):
-        # Optimization: Using mapping
         optimizer_methods = {
             "GD"                    : self.gradient(self.weights),
             "ModifiedNewton"        : self.modified_newton,
@@ -195,6 +194,7 @@ class LogisticRegression:
         a, b = self.diff_cal(self.weights.detach().numpy())
         return a, b
     # -------------------DEBUG MODE----------------------- #
+
     def nelder_mead(self):
         res = minimize(self.objective, self.weights, method='nelder-mead',
                         options={'maxiter': 1000, 'xatol': 1e-8,
@@ -206,7 +206,7 @@ class LogisticRegression:
     def gradient_descent_with_armijo(self):
         gradient = self.gradient(self.weights)
         direction = -gradient
-        step_size = self.armijo_stepsize_search(gradient, self.weights,\
+        step_size = self.armijo_stepsize_search(gradient, self.weights,
                                                 direction)
         self.weights += step_size * direction
         a, b = self.diff_cal(self.weights)
@@ -216,8 +216,8 @@ class LogisticRegression:
         gradient = self.gradient(self.weights)
         hessian = self.Hessian(self.weights)
         direction = np.linalg.solve(hessian, gradient)
-        step_size = self.armijo_stepsize_search(gradient, self.weights,\
-            direction)
+        step_size = self.armijo_stepsize_search(gradient, self.weights,
+                                                direction)
         self.weights += step_size * direction
         a, b = self.diff_cal(self.weights)
         return a, b
@@ -225,8 +225,8 @@ class LogisticRegression:
     def conjugate_gradient_with_armijo(self):
         gradient = self.gradient(self.weights)
         direction = -gradient
-        step_size = self.armijo_stepsize_search(gradient, self.weights,\
-            direction)
+        step_size = self.armijo_stepsize_search(gradient, self.weights,
+                                                direction)
         self.weights += step_size * direction
         a, b = self.diff_cal(self.weights)
         return a, b
@@ -255,8 +255,7 @@ class LogisticRegression:
                         - cp.logistic(self.X_train @ x))
         prob = cp.Problem(cp.Maximize(objective / self.num_samples - 0.5\
                                     * self.gamma * cp.norm2(x) ** 2))
-        prob.solve(solver=cp.ECOS_BB, verbose=False)  # False if not print it
-
+        prob.solve(solver=cp.ECOS_BB, verbose=False)
         opt_weights = np.array(x.value)
         opt_obj = self.objective(opt_weights)
         return opt_weights, opt_obj
