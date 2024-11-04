@@ -36,44 +36,6 @@ def test_adamw_initialization(setup_model):
     # Check if weights are initialized as a torch tensor
     assert callable(setup_model.adamw), "AdamW method is not implemented"
 
-# LBFGS
-# def test_lbfgs_initialization(setup_model):
-#     setup_model.LBFGS()
-
-#     # Check if weights are initialized as a torch tensor
-#     assert callable(setup_model.LBFGS), "LBFGS method is not implemented"
-
-# def test_lbfgs_weight_initialization(setup_model):
-#     setup_model.LBFGS()
-
-#     # Check if weights are initialized as a torch tensor
-#     assert isinstance(setup_model.weights, torch.Tensor), "Weights should be a torch tensor"
-
-# def test_lbfgs_loss_reduction(setup_model):
-#     model = setup_model
-#     initial_loss = model.objective(model.weights).item()
-#     # Execute the LBFGS method
-#     model.LBFGS()
-#     final_loss = model.objective(model.weights).item()
-#     # Check if the loss has been reduced
-#     assert final_loss < initial_loss, "Loss should be reduced after LBFGS execution"
-
-# def test_lbfgs_weight_update(setup_model):
-#     model = setup_model
-#     initial_weights = model.weights.clone()
-#     # Execute the LBFGS method
-#     model.LBFGS()
-#     # Check if the weights have been updated
-#     assert not torch.equal(initial_weights, model.weights), "Weights should be updated after LBFGS execution"
-
-# NetherMead
-
-# SGDW
-# def test_sgdw_initialization(setup_model):
-#     setup_model.sgdw()
-
-#     # Check if weights are initialized as a torch tensor
-#     assert callable(setup_model.sgdw), "SGDW method is not implemented"
 
 if __name__ == "__main__":
     pytest.main()
