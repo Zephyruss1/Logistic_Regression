@@ -6,36 +6,6 @@ from options import args_parser
 
 rcParams.update({'font.size': 18, 'text.usetex': True})
 
-try:
-    logreg_GD_weights, logreg_GD_objective =\
-        pkl.load(open('./results/logreg_GD.pkl', 'rb'))
-    logreg_GDArmijo_weights, logreg_GDArmijo_objective =\
-        pkl.load(open('./results/logreg_GDArmijo.pkl', 'rb'))
-    logreg_BFGS_weights, logreg_BFGS_objective =\
-        pkl.load(open('./results/logreg_BFGS.pkl', 'rb'))
-    logreg_modifiedNewton_weights, logreg_modifiedNewton_objective =\
-        pkl.load(open('./results/logreg_ModifiedNewton.pkl', 'rb'))
-    logreg_modifiedNewtonArmijo_weights, logreg_modifiedNewtonArmijo_objective =\
-        pkl.load(open('./results/logreg_ModifiedNewtonArmijo.pkl', 'rb'))
-    logreg_levenbergMarquardt_weights, logreg_levenbergMarquardt_objective =\
-        pkl.load(open('./results/logreg_LevenbergMarquardt.pkl', 'rb'))
-    logreg_ConjugateGradient_weights, logreg_ConjugateGradient_objective =\
-        pkl.load(open('./results/logreg_ConjugateGradient.pkl', 'rb'))
-    logreg_ConjugateGradientArmijo_weights, logreg_ConjugateGradientArmijo_objective = \
-        pkl.load(open('./results/logreg_ConjugateGDArmijo.pkl', 'rb'))
-    logreg_adam_weights, logreg_adam_objective =\
-        pkl.load(open('./results/logreg_adam.pkl', 'rb'))
-    logreg_adamw_weights, logreg_adamw_objective =\
-        pkl.load(open('./results/logreg_adamw.pkl', 'rb'))
-    logreg_sgd_weights, logreg_sgd_objective =\
-        pkl.load(open('./results/logreg_sgd.pkl', 'rb'))
-    logreg_sgdw_weights, logreg_sgdw_objective =\
-        pkl.load(open('./results/logreg_sgdw.pkl', 'rb'))
-except FileNotFoundError:
-    print("[PLOT ERROR]: File not found. Please run main.py\
-        first with relating optimization.")
-
-
 def plot_logreg():
     """
         Plot the logistic regression weights and objective values.
@@ -69,6 +39,37 @@ def plot_logreg():
     args = args_parser()
     rcParams.update({'text.usetex': False})
     logreg_dimension = 785
+
+    try:
+        logreg_GD_weights, logreg_GD_objective =\
+            pkl.load(open('/results/logreg_GD.pkl', 'rb'))
+        logreg_GDArmijo_weights, logreg_GDArmijo_objective =\
+            pkl.load(open('/results/logreg_GDArmijo.pkl', 'rb'))
+        logreg_BFGS_weights, logreg_BFGS_objective =\
+            pkl.load(open('/results/logreg_BFGS.pkl', 'rb'))
+        logreg_modifiedNewton_weights, logreg_modifiedNewton_objective =\
+            pkl.load(open('/results/logreg_ModifiedNewton.pkl', 'rb'))
+        logreg_modifiedNewtonArmijo_weights, logreg_modifiedNewtonArmijo_objective =\
+            pkl.load(open('/results/logreg_ModifiedNewtonArmijo.pkl', 'rb'))
+        logreg_levenbergMarquardt_weights, logreg_levenbergMarquardt_objective =\
+            pkl.load(open('/results/logreg_LevenbergMarquardt.pkl', 'rb'))
+        logreg_ConjugateGradient_weights, logreg_ConjugateGradient_objective =\
+            pkl.load(open('/results/logreg_ConjugateGradient.pkl', 'rb'))
+        logreg_ConjugateGradientArmijo_weights, logreg_ConjugateGradientArmijo_objective = \
+            pkl.load(open('/results/logreg_ConjugateGDArmijo.pkl', 'rb'))
+        logreg_adam_weights, logreg_adam_objective =\
+            pkl.load(open('/results/logreg_adam.pkl', 'rb'))
+        logreg_adamw_weights, logreg_adamw_objective =\
+            pkl.load(open('/results/logreg_AdamW.pkl', 'rb'))
+        logreg_sgd_weights, logreg_sgd_objective =\
+            pkl.load(open('/results/logreg_sgd.pkl', 'rb'))
+        logreg_sgdw_weights, logreg_sgdw_objective =\
+            pkl.load(open('/results/logreg_sgdw.pkl', 'rb'))
+    except FileNotFoundError:
+        print("[PLOT ERROR]: File not found. Please run main.py\
+            first with relating optimization.")
+        return
+
     plt.figure()
     try:
         if logreg_adam_weights is not None\
@@ -113,11 +114,10 @@ def plot_logreg():
             plt.xlabel('Objective Index')
             plt.ylabel('Objective Value')
             plt.legend()
-            plt.savefig('./results/comparison_objective.png',\
+            plt.savefig('./results/comparison_objective.png',
                         dpi=1200)
-
     except FileNotFoundError:
-        print("File not found. Please run main.py first with relating optimization.")
+        raise FileNotFoundError("File not found. Please run main.py first with relating optimization.")
 
     # Optimizer objectives
     plot_objectives = {
@@ -140,7 +140,7 @@ def plot_logreg():
         plt.plot(range(len(optimizer_objective)), np.array(optimizer_objective)\
                 / np.sqrt(logreg_dimension),
                  label=args.optimizer)
-        plt.savefig(f'./results/logreg_objectives_{args.optimizer}.png',\
+        plt.savefig(f'./results/logreg_objectives_{args.optimizer}.png',
                     dpi=1200)
     else:
         raise ValueError("Invalid optimizer: {}".format(args.optimizer))
@@ -173,11 +173,10 @@ def plot_logreg():
     }
     if args.optimizer in plot_weights:
         optimizer_weights = plot_weights[args.optimizer]
-        plt.plot(range(len(optimizer_weights)), optimizer_weights,\
+        plt.plot(range(len(optimizer_weights)), optimizer_weights,
                 label=args.optimizer)
-        plt.savefig(f'./results/logreg_weights_{args.optimizer}.png',\
+        plt.savefig(f'./results/logreg_weights_{args.optimizer}.png',
                     dpi=1200)
-
     else:
         raise ValueError("Invalid optimizer: {}".format(args.optimizer))
     plt.legend()
@@ -189,7 +188,6 @@ def plot_logreg():
     plt.yscale('log')
     plt.tight_layout()
     plt.show()
-
 
 if __name__ == '__main__':
     plot_logreg()
