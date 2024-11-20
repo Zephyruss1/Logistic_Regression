@@ -7,7 +7,7 @@ def args_parser():
         "--lr", type=float, default=0.1, help="learning rate for each update step"
     )
     parser.add_argument(
-        "--optimizer", type=str, default="AdamW", help="using GD for update"
+        "--optimizer", type=str, default="BFGS", help="using GD for update"
     )
     parser.add_argument(
         "--iteration",
