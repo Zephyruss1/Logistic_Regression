@@ -1,7 +1,5 @@
 import pytest
-import numpy as np
 import sys
-import torch
 
 sys.path.append("..")
 from logistic_regression import LogisticRegression

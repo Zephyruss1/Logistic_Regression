@@ -24,7 +24,7 @@ def test_setup_data():
     assert callable(data_preprocess)
 
 
-def test_astype_data(setup_data):
+def test_dtype_data(setup_data):
     """Check if the datatype is `float32`."""
     (x_train, y_train), (x_test, y_test) = setup_data
     assert (
@@ -38,9 +38,9 @@ def test_astype_data(setup_data):
 def test_shape_data(setup_data):
     """Check if the shape of the data is correct."""
     (x_train, y_train), (x_test, y_test) = setup_data
-    assert x_train.shape == (12665, 785) and x_test.shape == (
+    assert x_train.shape == (12665, 784) and x_test.shape == (
         2115,
-        785,
+        784,
     ), "Data shape is not correct"
 
 
