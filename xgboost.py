@@ -64,7 +64,7 @@ class TreeBooster:
     def _maybe_insert_child_nodes(self):
         for i in range(self.c): self._find_better_split(i)
         if self.is_leaf: return
-        x = self.X.values[self.idxs, self.split_feature_idx]
+        x = self.X[self.idxs, self.split_feature_idx]
         left_idx = np.nonzero(x <= self.threshold)[0]
         right_idx = np.nonzero(x > self.threshold)[0]
         self.left = TreeBooster(self.X, self.g, self.h, self.params,
@@ -76,7 +76,7 @@ class TreeBooster:
     def is_leaf(self): return self.best_score_so_far == 0.
 
     def _find_better_split(self, feature_idx):
-        x = self.X.values[self.idxs, feature_idx]
+        x = self.X[self.idxs, feature_idx]
         g, h = self.g[self.idxs], self.h[self.idxs]
         sort_idx = np.argsort(x)
         sort_g, sort_h, sort_x = g[sort_idx], h[sort_idx], x[sort_idx]
@@ -100,20 +100,25 @@ class TreeBooster:
                 self.best_score_so_far = gain
                 self.threshold = (x_i + x_i_next) / 2
 
-    def predict(self, X): return np.array([self._predict_row(row) for i, row in X.iterrows()])
+    def predict(self, X): return np.array([self._predict_row(row) for row in X])
 
     def _predict_row(self, row):
         if self.is_leaf: return self.value
-        child = self.left if row.iloc[self.split_feature_idx] <= self.threshold else self.right
+        child = self.left if row[self.split_feature_idx] <= self.threshold else self.right
         return child._predict_row(row)
 
 if __name__ == "__main__":
+    from datasets.data_preprocess import data_preprocess
+    from options import args_parser
+    _args = args_parser()
+
+    (X_train, y_train), (X_test, y_test) = data_preprocess(_args)
+
     from sklearn.datasets import fetch_california_housing
     from sklearn.model_selection import train_test_split
-
-    X, y = fetch_california_housing(as_frame=True, return_X_y=True)
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3,
-                                                        random_state=43)
+    # X, y = fetch_california_housing(as_frame=True, return_X_y=True)
+    # X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3,
+    #                                                     random_state=43)
 
     class SquaredErrorObjective:
         def loss(self, y, pred): return np.mean((y - pred) ** 2)
@@ -161,7 +166,7 @@ if __name__ == "__main__":
         model_scratch = XGBoostModel(params, random_seed=42)
         model_scratch.fit(X_train, y_train, SquaredErrorObjective(), num_boost_round)
         pred_scratch = model_scratch.predict(X_test)
-        print(f'Accuracy Score: {np.mean(pred_scratch == y_test) * 100} | Loss score: {SquaredErrorObjective().loss(y_test, pred_scratch)}')
+        print(f'loss_score: {SquaredErrorObjective().loss(y_test, pred_scratch)}')
 
     system_msg = input(str('Do you want to train with the xgboost library model? (y/n): '))
 
