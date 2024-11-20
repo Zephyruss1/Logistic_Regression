@@ -1,3 +1,4 @@
+
 import matplotlib.pyplot as plt
 import pickle as pkl
 import numpy as np
@@ -43,41 +44,41 @@ def plot_logreg():
 
     try:
         logreg_GD_weights, logreg_GD_objective = pkl.load(
-            open("/results/logreg_GD.pkl", "rb")
+            open("/home/zephyrus/Desktop/Logistic_Regression/results/logreg_GD.pkl", "rb")
         )
         logreg_GDArmijo_weights, logreg_GDArmijo_objective = pkl.load(
-            open("/results/logreg_GDArmijo.pkl", "rb")
+            open("/home/zephyrus/Desktop/Logistic_Regression/results/logreg_GDArmijo.pkl", "rb")
         )
         logreg_BFGS_weights, logreg_BFGS_objective = pkl.load(
-            open("/results/logreg_BFGS.pkl", "rb")
+            open("/home/zephyrus/Desktop/Logistic_Regression/results/logreg_BFGS.pkl", "rb")
         )
         logreg_modifiedNewton_weights, logreg_modifiedNewton_objective = pkl.load(
-            open("/results/logreg_ModifiedNewton.pkl", "rb")
+            open("/home/zephyrus/Desktop/Logistic_Regression/results/logreg_ModifiedNewton.pkl", "rb")
         )
         logreg_modifiedNewtonArmijo_weights, logreg_modifiedNewtonArmijo_objective = (
-            pkl.load(open("/results/logreg_ModifiedNewtonArmijo.pkl", "rb"))
+            pkl.load(open("/home/zephyrus/Desktop/Logistic_Regression/results/logreg_ModifiedNewtonArmijo.pkl", "rb"))
         )
         logreg_levenbergMarquardt_weights, logreg_levenbergMarquardt_objective = (
-            pkl.load(open("/results/logreg_LevenbergMarquardt.pkl", "rb"))
+            pkl.load(open("/home/zephyrus/Desktop/Logistic_Regression/results/logreg_LevenbergMarquardt.pkl", "rb"))
         )
         logreg_ConjugateGradient_weights, logreg_ConjugateGradient_objective = pkl.load(
-            open("/results/logreg_ConjugateGradient.pkl", "rb")
+            open("/home/zephyrus/Desktop/Logistic_Regression/results/logreg_ConjugateGradient.pkl", "rb")
         )
         (
             logreg_ConjugateGradientArmijo_weights,
             logreg_ConjugateGradientArmijo_objective,
-        ) = pkl.load(open("/results/logreg_ConjugateGDArmijo.pkl", "rb"))
+        ) = pkl.load(open("/home/zephyrus/Desktop/Logistic_Regression/results/logreg_ConjugateGDArmijo.pkl", "rb"))
         logreg_adam_weights, logreg_adam_objective = pkl.load(
-            open("/results/logreg_adam.pkl", "rb")
+            open("/home/zephyrus/Desktop/Logistic_Regression/results/logreg_adam.pkl", "rb")
         )
         logreg_adamw_weights, logreg_adamw_objective = pkl.load(
-            open("/results/logreg_AdamW.pkl", "rb")
+            open("/home/zephyrus/Desktop/Logistic_Regression/results/logreg_AdamW.pkl", "rb")
         )
         logreg_sgd_weights, logreg_sgd_objective = pkl.load(
-            open("/results/logreg_sgd.pkl", "rb")
+            open("/home/zephyrus/Desktop/Logistic_Regression/results/logreg_sgd.pkl", "rb")
         )
         logreg_sgdw_weights, logreg_sgdw_objective = pkl.load(
-            open("/results/logreg_sgdw.pkl", "rb")
+            open("/home/zephyrus/Desktop/Logistic_Regression/results/logreg_sgdw.pkl", "rb")
         )
     except FileNotFoundError:
         print(

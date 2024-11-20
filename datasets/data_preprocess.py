@@ -106,6 +106,7 @@ def mnist_process_data(target_ind_0=0, target_ind_1=1):
     x_train = x_train.astype("float32")
     x_test = x_test.astype("float32")
 
+    x_test = x_test[:, :784] # Temporarly fix. Dimenson of x_test is 785 instead of 784
     # normalization
     x_train /= 255.0
     x_test /= 255.0
@@ -125,8 +126,8 @@ def data_preprocess(args):
         target_ind_0=target_ind_0, target_ind_1=target_ind_1
     )
 
-    print("==========================")
-    print("     training dataset: ", x_train.shape)
-    print("     testing dataset: ", x_test.shape)
+    print("-------------------------")
+    print("training dataset: ", x_train.shape)
+    print("testing dataset:  ", x_test.shape)
 
     return (x_train, y_train), (x_test, y_test)

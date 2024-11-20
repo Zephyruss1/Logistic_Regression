@@ -292,7 +292,7 @@ class LogisticRegression:
         obj_diff = abs(self.objective(weights) - self.opt_obj)
         return weight_diff, obj_diff
 
-    def adam(self, beta1=0.9, beta2=0.999, EPSILON=1e-8):
+    def adam(self, beta1=0.9, beta2=0.999):
         self.t += 1
         gradient = self.gradient(self.weights)
         self.m = beta1 * self.m + (1 - beta1) * gradient
@@ -307,7 +307,7 @@ class LogisticRegression:
         return a, b
 
     def adamw(
-        self, beta1=0.9, beta2=0.999, EPSILON=1e-8, weight_decay=0.01, device="cpu"
+        self, beta1=0.9, beta2=0.999, weight_decay=0.01, device="cpu"
     ):
         if torch.cuda.is_available() and torch.version.hip is not None:
             device = "cuda"
