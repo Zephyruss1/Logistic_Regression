@@ -1,5 +1,5 @@
 import optuna
-from xgboost import XGBoostModel, TreeBooster
+from xgboost import XGBoostModel
 import numpy as np
 from options import args_parser
 from datasets.data_preprocess import data_preprocess
@@ -7,27 +7,27 @@ from datasets.data_preprocess import data_preprocess
 _args = args_parser()
 (X_train, y_train), (X_test, y_test) = data_preprocess(_args)
 
-ask_boost_round = input(str("Do you want to change the number of boosting rounds? [50]: "))
+ask_boost_round = input("Do you want to change the number of boosting rounds? [50]: ")
 if ask_boost_round:
-    if isinstance(ask_boost_round, int):
-        NUM_BOOST_ROUND = ask_boost_round
+    try:
+        NUM_BOOST_ROUND = int(ask_boost_round)
         print(f"Number of boosting rounds: {NUM_BOOST_ROUND}")
-    else:
+    except ValueError:
         raise ValueError("Please enter an integer value.")
 else:
     NUM_BOOST_ROUND = 50
     print(f"Number of boosting rounds: {NUM_BOOST_ROUND}")
 
-ask_n_trials = input(str("Do you want to change the number of n_trials? [50]: "))
+ask_n_trials = input("Do you want to change the number of n_trials? [50]: ")
 if ask_n_trials:
-    if isinstance(ask_n_trials, int):
-        N_TRIALS = ask_n_trials
-        print(f"Number of boosting rounds: {N_TRIALS}")
-    else:
+    try:
+        N_TRIALS = int(ask_n_trials)
+        print(f"Number of trials: {N_TRIALS}")
+    except ValueError:
         raise ValueError("Please enter an integer value.")
 else:
     N_TRIALS = 50
-    print(f"Number of boosting rounds: {N_TRIALS}")
+    print(f"Number of trials: {N_TRIALS}")
 
 class Objective:
     def loss(self, y, pred): raise NotImplementedError
@@ -42,23 +42,29 @@ class SquaredErrorObjective(Objective):
 
 
 def objective(trial):
-    params = {
-        'max_depth': trial.suggest_int('max_depth', 1, 10),
-        'learning_rate': trial.suggest_float('learning_rate', 1e-3, 1.0, log=True),  # Adjusted bounds
-        'subsample': trial.suggest_float('subsample', 0.5, 1.0),             # Safer lower bound
-        'reg_lambda': trial.suggest_float('reg_lambda', 1.0, 5.0),
-        'gamma': trial.suggest_float('gamma', 1e-4, 1.0, log=True),                 # Adjusted bounds
-        'min_child_weight': trial.suggest_float('min_child_weight', 0.1, 10.0),  # Safer range
-    }
+    try:
+        params = {
+            'max_depth': trial.suggest_int('max_depth', 1, 10),
+            'learning_rate': trial.suggest_float('learning_rate', 1e-3, 1.0, log=True),
+            'subsample': trial.suggest_float('subsample', 0.5, 1.0),
+            'reg_lambda': trial.suggest_float('reg_lambda', 1.0, 5.0),
+            'gamma': trial.suggest_float('gamma', 1e-4, 1.0, log=True),
+            'min_child_weight': trial.suggest_float('min_child_weight', 0.1, 10.0),
+        }
 
-    xgb = XGBoostModel(params, random_seed=42)
-    xgb.fit(X_train, y_train, SquaredErrorObjective(), NUM_BOOST_ROUND, verboose=True)
-    pred_scratch = xgb.predict(X_test)
-    return SquaredErrorObjective().loss(y_test, pred_scratch)
+        xgb = XGBoostModel(params, random_seed=42)
+        xgb.fit(X_train, y_train, SquaredErrorObjective(), NUM_BOOST_ROUND, verboose=True)
+        pred_scratch = xgb.predict(X_test)
+        return SquaredErrorObjective().loss(y_test, pred_scratch)
+    except Exception as e:
+        print(f"Trial {trial.number} failed: {e}")
+        return float('inf')  # Mark this trial as failed
 
-def main():
-    print("-- [DEV] OPTUNA HYPERPARAMETER TUNING --")
+def main() -> dict:
+    from pprint import pprint
+    print("-- OPTUNA HYPERPARAMETER TUNING --")
     study = optuna.create_study(direction='minimize')
     study.optimize(objective, n_trials=N_TRIALS)
-    print("Best Parameters:", study.best_params)
+    pprint({"Best Parameters": study.best_params})
     print("Best Loss Value:", study.best_value)
+    return study.best_params

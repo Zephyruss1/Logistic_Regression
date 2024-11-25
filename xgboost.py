@@ -1,7 +1,8 @@
+from collections import defaultdict
+
 import numpy as np
 import pandas as pd
-import math
-from collections import defaultdict
+
 
 class XGBoostModel:
     """ XGBoost model class """
@@ -97,8 +98,7 @@ class TreeBooster:
     def is_leaf(self): return self.left is None and self.right is None
 
     def _find_better_split(self, feature_idx):
-        x = self.X[self.idxs, feature_idx]
-        g, h = self.g[self.idxs], self.h[self.idxs]
+        g, h, x = self.g[self.idxs], self.h[self.idxs], self.X[self.idxs, feature_idx]
         sort_idx = np.argsort(x)
         sort_g, sort_h, sort_x = g[sort_idx], h[sort_idx], x[sort_idx]
         sum_g, sum_h = g.sum(), h.sum()
@@ -159,8 +159,6 @@ if __name__ == "__main__":
         def gradient(self, y, pred): return pred - y
         def hessian(self, y, pred): return np.ones(len(y))
 
-    import xgboost as xgb
-
     params = {
         'learning_rate': 0.1,
         'max_depth': 10,
@@ -171,7 +169,6 @@ if __name__ == "__main__":
         'base_score': 0.0,
         'tree_method': 'exact',
     }
-    num_boost_round = 200
 
     def elapsed_time(func):
         def wrapper(*args, **kwargs):
@@ -185,27 +182,39 @@ if __name__ == "__main__":
             return result
         return wrapper
 
-    @elapsed_time
-    def xgboost_library():
-        # train the library XGBoost model
-        dtrain = xgb.DMatrix(X_train, label=y_train)
-        dtest = xgb.DMatrix(X_test, label=y_test)
-        model_xgb = xgb.train(params, dtrain, num_boost_round)
-        pred_xgb = model_xgb.predict(dtest)
-        print(f'xgboost score: {SquaredErrorObjective().loss(y_test, pred_xgb)}')
+    def ask_boost_round():
+        ask_boost_round = input("Do you want to change the number of boosting rounds? [100]: ")
+        if ask_boost_round:
+            try:
+                num_boost_round = int(ask_boost_round)
+                print(f"Number of boosting rounds: {num_boost_round}")
+            except ValueError:
+                raise ValueError("Please enter an integer value.")
+        else:
+            num_boost_round = 100
+            print(f"Number of boosting rounds: {num_boost_round}")
+        return num_boost_round
 
     @elapsed_time
-    def xgboost_scratch():
+    def xgboost_scratch(param: dict):
+        num_boost_round = ask_boost_round()
         # train the from-scratch XGBoost model
-        model_scratch = XGBoostModel(params, random_seed=42)
-        model_scratch.fit(X_train, y_train, SquaredErrorObjective(), num_boost_round, verboose=True)
+        model_scratch = XGBoostModel(param, random_seed=42)
+        model_scratch.fit(X_train, y_train, SquaredErrorObjective(), num_boost_round,
+                          verboose=True)
         pred_scratch = model_scratch.predict(X_test)
         print(f'Loss Score: {SquaredErrorObjective().loss(y_test, pred_scratch)}')
 
     optuna_msg = input(str('Do you want to train optuna with the xgboost scratch model? (y/n): '))
 
+    from pprint import pprint
     if optuna_msg.lower() == 'y':
         import find_best_parameters
-        find_best_parameters.main()
+        best_params = find_best_parameters.main()
+        pprint({"Best Parameters": best_params})
+        print("Running xgboost from scratch with best parameters...")
+        xgboost_scratch(best_params)
     else:
-        xgboost_scratch()
+        pprint({"Default Parameters": params})
+        print("---" * 15)
+        xgboost_scratch(params)
