@@ -129,5 +129,6 @@ def data_preprocess(args):
     print("-------------------------")
     print("training dataset: ", x_train.shape)
     print("testing dataset:  ", x_test.shape)
+    print("-------------------------")
 
     return (x_train, y_train), (x_test, y_test)
