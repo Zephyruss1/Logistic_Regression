@@ -1,5 +1,5 @@
 import optuna
-from xgboost import XGBoostModel
+from xgboost_scratch import XGBoostModel
 import numpy as np
 from options import args_parser
 from datasets.data_preprocess import data_preprocess
