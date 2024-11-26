@@ -42,6 +42,11 @@ class SquaredErrorObjective(Objective):
 
 
 def objective(trial):
+    from options import args_parser
+    from datasets.data_preprocess import data_preprocess
+    _args = args_parser()
+    (X_train, y_train), (X_test, y_test) = data_preprocess(_args)
+
     try:
         params = {
             'max_depth': trial.suggest_int('max_depth', 1, 10),
@@ -52,8 +57,8 @@ def objective(trial):
             'min_child_weight': trial.suggest_float('min_child_weight', 0.1, 10.0),
         }
 
-        xgb = XGBoostModel(params, random_seed=42)
-        xgb.fit(X_train, y_train, SquaredErrorObjective(), NUM_BOOST_ROUND, verboose=True)
+        xgb = XGBoostModel(params, X_train, y_train, random_seed=42)
+        xgb.fit(SquaredErrorObjective(), NUM_BOOST_ROUND, verboose=True)
         pred_scratch = xgb.predict(X_test)
         return SquaredErrorObjective().loss(y_test, pred_scratch)
     except Exception as e:
