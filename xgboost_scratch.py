@@ -6,7 +6,8 @@ import pandas as pd
 
 class XGBoostModel:
     """ XGBoost model class """
-    def __init__(self, params, random_seed=None):
+    def __init__(self, params, X, y, random_seed=None):
+        self.X, self.y = X, y
         self.boosters = []
         self.params = defaultdict(lambda: None, params)
         self.subsample = self.params['subsample'] \
@@ -19,20 +20,20 @@ class XGBoostModel:
             if self.params['max_depth'] is not None else 5
         self.rng = np.random.default_rng(seed=random_seed)
 
-    def fit(self, X, y, objective, num_boost_round, verboose=False):
-        current_predictions = np.zeros_like(y) + self.base_prediction
+    def fit(self, objective, num_boost_round, verboose=False):
+        current_predictions = np.zeros_like(self.y) + self.base_prediction
 
         for i in range(num_boost_round):
-            gradients = objective.gradient(y, current_predictions)
-            hessians = objective.hessian(y, current_predictions)
+            gradients = objective.gradient(self.y, current_predictions)
+            hessians = objective.hessian(self.y, current_predictions)
             sample_idxs = None if self.subsample == 1.0 else self.rng.choice(
-                len(y), size=int(np.floor(self.subsample * len(y))), replace=False)
-            booster = TreeBooster(X, gradients, hessians, self.params,
+                len(self.y), size=int(np.floor(self.subsample * len(self.y))), replace=False)
+            booster = TreeBooster(self.X, gradients, hessians, self.params,
                                   self.max_depth, sample_idxs)
-            current_predictions += self.learning_rate * booster.predict(X)
+            current_predictions += self.learning_rate * booster.predict(self.X)
             self.boosters.append(booster)
             if verboose:
-                print(f'Round: {i} | train loss: {objective.loss(y, current_predictions)}')
+                print(f'Round: {i} | train loss: {objective.loss(self.y, current_predictions)}')
             else: print("Training (verboose == False)...")
 
     def predict(self, X):
@@ -199,8 +200,8 @@ if __name__ == "__main__":
     def xgboost_scratch(param: dict):
         num_boost_round = ask_boost_round()
         # train the from-scratch XGBoost model
-        model_scratch = XGBoostModel(param, random_seed=42)
-        model_scratch.fit(X_train, y_train, SquaredErrorObjective(), num_boost_round,
+        model_scratch = XGBoostModel(param, X_train, y_train, random_seed=42)
+        model_scratch.fit(SquaredErrorObjective(), num_boost_round,
                           verboose=True)
         pred_scratch = model_scratch.predict(X_test)
         print(f'Loss Score: {SquaredErrorObjective().loss(y_test, pred_scratch)}')
