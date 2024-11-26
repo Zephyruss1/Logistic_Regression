@@ -4,10 +4,10 @@ import sys
 sys.path.append("..")
 from logistic_regression import LogisticRegression
 from datasets.data_preprocess import data_preprocess
-from options import args_parser
+from options import arg_parser_for_tests
 
 # Parse arguments
-args = args_parser()
+args = arg_parser_for_tests()
 
 
 @pytest.fixture
