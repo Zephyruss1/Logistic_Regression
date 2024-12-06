@@ -47,5 +47,5 @@ def arg_parser_for_tests():
         help="penalty term for logistic regression",
     )
 
-    known_args = parser.parse_known_args()
+    known_args, _ = parser.parse_known_args()
     return known_args
