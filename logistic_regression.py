@@ -325,8 +325,8 @@ class LogisticRegression:
         )
 
         a, b = self.diff_cal(self.weights)
-        fused_aviable = "fused" in inspect.signature(torch.optim.AdamW).parameters
-        use_fused = fused_aviable and device == "cuda"
+        fused_available = "fused" in inspect.signature(torch.optim.AdamW).parameters
+        use_fused = fused_available and device == "cuda"
         print(f"using fused adam: {use_fused}")
         return a, b
 
