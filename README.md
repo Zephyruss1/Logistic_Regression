@@ -1,1 +1,1 @@
-Logistic Regression from scratch
+Logistic Regression & XGBoost from scratch
