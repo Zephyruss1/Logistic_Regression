@@ -5,7 +5,61 @@ import pandas as pd
 
 
 class XGBoostModel:
-    """ XGBoost model class """
+    """
+    A class implementing a simplified version of the XGBoost algorithm.
+
+    This class supports gradient-boosted decision trees with custom objectives, allowing for flexible
+    control over hyperparameters, subsampling, and tree depth.
+
+    Attributes:
+        X (np.ndarray): Feature matrix for training.
+        y (np.ndarray): Target values for training.
+        boosters (list): List of trained `TreeBooster` objects.
+        params (dict): Dictionary containing hyperparameters, with defaults applied using `defaultdict`:
+            - `subsample` (float): Fraction of data to subsample for each boosting round. Default is 1.0.
+            - `learning_rate` (float): Learning rate for weight updates. Default is 0.3.
+            - `base_score` (float): Initial base prediction for all observations. Default is 0.5.
+            - `max_depth` (int): Maximum depth of each tree. Default is 5.
+        subsample (float): Fraction of the dataset to use in each boosting round.
+        learning_rate (float): Step size shrinkage for updates.
+        base_prediction (float): Initial prediction for all targets.
+        max_depth (int): Maximum depth of the decision trees.
+        rng (np.random.Generator): Random number generator for reproducible subsampling.
+
+    Methods:
+        __init__(self, params, X, y, random_seed=None):
+            Initializes the model with hyperparameters, data, and an optional random seed.
+
+        fit(self, objective, num_boost_round, verboose=False):
+            Trains the model using gradient-boosted trees.
+
+            Args:
+                objective: An objective function object with `gradient`, `hessian`, and `loss` methods.
+                num_boost_round (int): Number of boosting rounds to perform.
+                verboose (bool): If `True`, prints loss at each boosting round.
+
+        predict(self, X):
+            Generates predictions for the input data using the trained model.
+
+            Args:
+                X (np.ndarray): Feature matrix for prediction.
+
+            Returns:
+                np.ndarray: Predicted values for the input data.
+
+    Notes:
+        - The `fit` method trains the model by iteratively creating `TreeBooster` objects for each boosting round.
+        - Subsampling is applied during training to improve generalization and reduce overfitting.
+        - The objective must implement three methods:
+            - `gradient(y, predictions)`: Compute gradients.
+            - `hessian(y, predictions)`: Compute hessians.
+            - `loss(y, predictions)`: Calculate loss for monitoring.
+
+    Limitations:
+        - This implementation is a simplified version and may lack certain optimizations and features of
+          a full-fledged XGBoost library.
+    """
+
     def __init__(self, params, X, y, random_seed=None):
         self.X, self.y = X, y
         self.boosters = []
@@ -40,8 +94,49 @@ class XGBoostModel:
         booster_preds = np.array([booster.predict(X) for booster in self.boosters])
         return self.base_prediction + self.learning_rate * booster_preds.sum(axis=0)
 
+
 class TreeBooster:
-    """Tree booster class"""
+    """
+    A class implementing a decision tree booster for gradient-boosted tree algorithms.
+
+    The `TreeBooster` class constructs and manages individual decision tree nodes. It supports
+    gradient and hessian-based optimization, with options for regularization and constraints.
+
+    Attributes:
+        params (dict): Dictionary containing hyperparameters for the tree booster:
+            - `min_child_weight` (float): Minimum sum of hessian values required for a child node.
+            - `reg_lambda` (float): L2 regularization term for weight optimization.
+            - `gamma` (float): Minimum gain required to make a split.
+            - `colsample_bynode` (float): Fraction of features to consider at each split.
+        max_depth (int): Maximum depth of the tree. Must be non-negative.
+        min_child_weight (float): Extracted from `params`, defaulting to 1.0.
+        reg_lambda (float): L2 regularization parameter, defaulting to 1.0.
+        gamma (float): Minimum gain required to make a split, defaulting to 0.0.
+        colsample_bynode (float): Fraction of columns to sample per split, defaulting to 1.0.
+        X (np.ndarray): Feature matrix.
+        g (np.ndarray): Gradient values of the loss function.
+        h (np.ndarray): Hessian values of the loss function.
+        idxs (np.ndarray): Indices of the data points in the current node.
+        n (int): Number of data points in the current node.
+        c (int): Number of features in the dataset.
+        value (float): Predicted value of the node, computed as:
+            `-sum(gradients) / (sum(hessians) + reg_lambda)`
+        best_score_so_far (float): Best split gain observed so far for the current node.
+        left (TreeBooster or None): Left child node (created if a split occurs).
+        right (TreeBooster or None): Right child node (created if a split occurs).
+
+    Methods:
+        __init__(self, X, g, h, params, max_depth, idxs=None):
+            Initializes the tree booster node. If `max_depth > 0`, attempts to insert child nodes.
+
+    Notes:
+        - The tree uses gradients and hessians for optimization to support gradient-boosted
+          decision trees.
+        - Regularization parameters (`reg_lambda`, `gamma`) are used to prevent overfitting.
+        - If `max_depth` is greater than 0, the `_maybe_insert_child_nodes` method is called to
+          construct child nodes recursively.
+    """
+
     def __init__(self, X, g, h, params, max_depth, idxs=None):
         self.params = params
         self.max_depth = max_depth
@@ -68,7 +163,40 @@ class TreeBooster:
 
 
     def _maybe_insert_child_nodes(self):
+        """
+        Creates child nodes for the current node by finding and applying the best possible splits.
 
+        This function is a core part of the decision tree construction process. It evaluates each
+        feature to find the best split that maximizes the gain. If a split is found, it partitions
+        the data into left and right subsets and recursively creates child nodes for further splits.
+
+        Key Steps:
+        1. **Find the Best Split**: Iterates over all features to evaluate potential splits and
+           updates the `split_feature_idx` and `threshold` for the best gain.
+        2. **Check for Leaf Node**: If no valid split is found (leaf node condition met), the
+           function terminates.
+        3. **Create Child Nodes**: Splits the data at the best threshold for the chosen feature
+           and initializes left and right child nodes if sufficient data points exist in each subset.
+
+        Attributes Used:
+            - `self.c`: Number of features to evaluate.
+            - `self.is_leaf`: Property to check if the node is a leaf.
+            - `self.X`: Feature matrix.
+            - `self.idxs`: Indices of the data points in the current node.
+            - `self.split_feature_idx`: Index of the feature chosen for the split.
+            - `self.threshold`: Threshold value for the split.
+
+        Attributes Modified:
+            - `self.left`: Left child node, created if sufficient data exists in the left subset.
+            - `self.right`: Right child node, created if sufficient data exists in the right subset.
+
+        Notes:
+            - If a node becomes a leaf, no child nodes are created.
+            - Splits are performed based on maximizing the gain calculated in `_find_better_split`.
+
+        Returns:
+            None
+        """
         # First try to find a better split for each feature
         for i in range(self.c):
             self._find_better_split(i)
@@ -100,6 +228,61 @@ class TreeBooster:
         return self.left is None and self.right is None
 
     def _find_better_split(self, feature_idx):
+        """
+        Identifies the best split for a given feature to maximize the gain.
+
+        This method evaluates potential split points for the specified feature by iterating
+        through all unique values in the feature. The goal is to find a split that optimizes
+        the gain, which is a measure of how much a split improves the decision tree's performance.
+
+        Parameters:
+            feature_idx (int): Index of the feature being evaluated for the split.
+
+        Key Steps:
+        1. **Prepare Feature Data**:
+           - Extract gradients (`g`), hessians (`h`), and feature values (`x`) for the current node.
+           - Sort these values to facilitate efficient split evaluation.
+        2. **Iterate Over Splits**:
+           - Iterate through all possible split points for the feature.
+           - Update the left and right sums of gradients and hessians as the split moves.
+        3. **Check Validity**:
+           - Ensure the left and right child nodes have sufficient weight (`min_child_weight`).
+           - Skip invalid splits or redundant splits (e.g., consecutive identical feature values).
+        4. **Calculate Gain**:
+           - Compute the gain for each valid split using the gradients, hessians, and regularization terms.
+           - Update the best split parameters (`split_feature_idx`, `threshold`, `best_score_so_far`) if a better split is found.
+        5. **Early Stopping**:
+           - Stop iteration early if the gain drops significantly below the current best score.
+
+        Attributes Used:
+            - `self.g`: Gradient values for the loss function.
+            - `self.h`: Hessian values for the loss function.
+            - `self.X`: Feature matrix.
+            - `self.idxs`: Indices of data points in the current node.
+            - `self.min_child_weight`: Minimum weight required for a child node to be valid.
+            - `self.reg_lambda`: Regularization parameter for gain calculation.
+            - `self.gamma`: Regularization term for split gain.
+            - `self.best_score_so_far`: Current best gain value.
+            - `self.n`: Number of data points in the current node.
+
+        Attributes Modified:
+            - `self.split_feature_idx`: Index of the feature chosen for the best split.
+            - `self.threshold`: Threshold value of the best split.
+            - `self.best_score_so_far`: Updated best gain value.
+
+        Notes:
+            - A valid split must ensure that both child nodes have sufficient hessian weight.
+            - Gains are calculated using the formula:
+              ```
+              gain = 0.5 * (sum_g_left^2 / (sum_h_left + reg_lambda) +
+                            sum_g_right^2 / (sum_h_right + reg_lambda) -
+                            sum_g^2 / (sum_h + reg_lambda)) - gamma / 2
+              ```
+            - Early stopping is applied to prevent unnecessary calculations when gains drop significantly.
+
+        Returns:
+            None
+        """
         g, h, x = self.g[self.idxs], self.h[self.idxs], self.X[self.idxs, feature_idx]
         sort_idx = np.argsort(x)
         sort_g, sort_h, sort_x = g[sort_idx], h[sort_idx], x[sort_idx]
