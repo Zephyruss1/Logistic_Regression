@@ -33,7 +33,9 @@ def test_neldermead_weights_properly_updated(setup_model):
     setup_model.nelder_mead()
 
     # Assert if the weights attribute is updated correctly (example check)
-    assert isinstance(setup_model.weights, np.ndarray), "Weights were not updated properly"
+    assert isinstance(
+        setup_model.weights, np.ndarray
+    ), "Weights were not updated properly"
 
 
 def test_adamw_weights_properly_updated(setup_model):
@@ -41,8 +43,9 @@ def test_adamw_weights_properly_updated(setup_model):
     setup_model.adamw()
 
     # Assert if the weights attribute is updated correctly (example check)
-    assert isinstance(setup_model.weights, np.ndarray), "Weights were not updated properly"
-
+    assert isinstance(
+        setup_model.weights, np.ndarray
+    ), "Weights were not updated properly"
 
 
 if __name__ == "__main__":

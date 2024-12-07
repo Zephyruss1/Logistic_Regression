@@ -96,7 +96,8 @@ class TreeBooster:
             self.right = None
 
     @property
-    def is_leaf(self): return self.left is None and self.right is None
+    def is_leaf(self):
+        return self.left is None and self.right is None
 
     def _find_better_split(self, feature_idx):
         g, h, x = self.g[self.idxs], self.h[self.idxs], self.X[self.idxs, feature_idx]
@@ -140,6 +141,7 @@ class TreeBooster:
     def predict(self, X): return np.array([self._predict_row(row) for row in X])
 
     def _predict_row(self, row):
-        if self.is_leaf: return self.value
+        if self.is_leaf:
+            return self.value
         child = self.left if row[self.split_feature_idx] <= self.threshold else self.right
         return child._predict_row(row)
