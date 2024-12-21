@@ -6,8 +6,6 @@ import os
 import numpy as np
 import pickle as pkl
 from datasets.data_preprocess import data_preprocess
-import logistic_regression
-from xgboost_scratch import XGBoostModel
 from options import args_parser
 import datetime
 from plot import plot_logreg
@@ -68,6 +66,7 @@ def main_run():
 
             ask_model = input("List of available models:\n1. Logistic Regression\n2. XGBoost\n->: ")
             if ask_model == "1":
+                import logistic_regression
                 print("learning rate: ", _args.lr)
                 print("Optimizer: ", _args.optimizer)
                 print("-------------------------")
@@ -102,6 +101,7 @@ def main_run():
                 print("Accuracy: {:.1f}%".format(percent_correct))
             elif ask_model == "2":
                 def xgboost_scratch(param: dict):
+                    from xgboost_scratch import XGBoostModel
                     # train the from-scratch XGBoost model
                     model_scratch = XGBoostModel(param, x_train, y_train, random_seed=42)
                     model_scratch.fit(SquaredErrorObjective(), ask_boost_round(),
