@@ -82,8 +82,7 @@ def plot_logreg():
         )
     except FileNotFoundError:
         print(
-            "[PLOT ERROR]: File not found. Please run main.py\
-            first with relating optimization."
+            '[PLOT WARNING]: File not found. Please run "main.py" first with relating optimization.'
         )
         return
 
