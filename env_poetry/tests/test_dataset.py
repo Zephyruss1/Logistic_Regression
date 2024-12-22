@@ -5,7 +5,7 @@ import sys
 sys.path.append("..")
 
 from datasets.data_preprocess import data_preprocess
-from options import arg_parser_for_tests
+from src.options import arg_parser_for_tests
 
 # Parse arguments with defaults
 known_args = arg_parser_for_tests()

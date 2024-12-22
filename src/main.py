@@ -1,6 +1,6 @@
 import sys
 
-sys.path.append("./datasets")
+sys.path.append("../datasets")
 
 import os
 import numpy as np
@@ -66,7 +66,7 @@ def main_run():
 
             ask_model = input("List of available models:\n1. Logistic Regression\n2. XGBoost\n->: ")
             if ask_model == "1":
-                import logistic_regression
+                from src import logistic_regression
                 print("learning rate: ", _args.lr)
                 print("Optimizer: ", _args.optimizer)
                 print("-------------------------")
@@ -101,7 +101,7 @@ def main_run():
                 print("Accuracy: {:.1f}%".format(percent_correct))
             elif ask_model == "2":
                 def xgboost_scratch(param: dict):
-                    from xgboost_scratch import XGBoostModel
+                    from src.xgboost_scratch import XGBoostModel
                     # train the from-scratch XGBoost model
                     model_scratch = XGBoostModel(param, x_train, y_train, random_seed=42)
                     model_scratch.fit(SquaredErrorObjective(), ask_boost_round(),
@@ -123,7 +123,7 @@ def main_run():
                 }
                 from pprint import pprint
                 if optuna_msg.lower() == 'y':
-                    import find_best_parameters
+                    from src import find_best_parameters
                     best_params = find_best_parameters.main()
                     pprint({"Best Parameters": best_params})
                     print("Running xgboost from scratch with best parameters...")

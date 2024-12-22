@@ -3,9 +3,9 @@ import sys
 import numpy as np
 
 sys.path.append("..")
-from logistic_regression import LogisticRegression
+from src.logistic_regression import LogisticRegression
 from datasets.data_preprocess import data_preprocess
-from options import arg_parser_for_tests
+from src.options import arg_parser_for_tests
 
 # Parse arguments
 args = arg_parser_for_tests()

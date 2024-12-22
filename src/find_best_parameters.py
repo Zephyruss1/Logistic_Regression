@@ -1,7 +1,7 @@
 import optuna
 from xgboost_scratch import XGBoostModel
 import numpy as np
-from options import args_parser
+from src.options import args_parser
 from datasets.data_preprocess import data_preprocess
 
 _args = args_parser()
@@ -42,7 +42,7 @@ class SquaredErrorObjective(Objective):
 
 
 def objective(trial):
-    from options import args_parser
+    from src.options import args_parser
     from datasets.data_preprocess import data_preprocess
     _args = args_parser()
     (X_train, y_train), (X_test, y_test) = data_preprocess(_args)
