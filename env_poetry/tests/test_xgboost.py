@@ -1,10 +1,11 @@
 import unittest
 import numpy as np
 import sys
-import os
+import datetime
 
-sys.path.append(os.path.abspath(".."))
+sys.path.append("..")
 from src.xgboost_scratch import XGBoostModel, TreeBooster
+from main import elapsed_time
 
 
 class Objective:
@@ -97,8 +98,6 @@ class TestXGBoostModel(unittest.TestCase):
 
     def test_elapsed_time_decorator(self):
         # Test the elapsed_time decorator
-        import datetime
-        from src.main import elapsed_time
 
         @elapsed_time
         def dummy_function():
@@ -113,7 +112,7 @@ class TestXGBoostModel(unittest.TestCase):
     def test_ask_boost_round(self):
         # Test the ask_boost_round function
         from unittest.mock import patch
-        from src.main import ask_boost_round
+        from main import ask_boost_round
 
         with patch("builtins.input", return_value="50"):
             num_boost_round = ask_boost_round()

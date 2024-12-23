@@ -5,17 +5,17 @@ import sys
 sys.path.append("..")
 
 from datasets.data_preprocess import data_preprocess
-from src.options import arg_parser_for_tests
+from src.options import args_parser
 
 # Parse arguments with defaults
-known_args = arg_parser_for_tests()
+args = args_parser(test_case=True)
 
 
 @pytest.fixture
 def setup_data():
     """Fixture to preprocess and return data."""
     # Preprocess data using the default args
-    (x_train, y_train), (x_test, y_test) = data_preprocess(known_args)
+    (x_train, y_train), (x_test, y_test) = data_preprocess(args)
     return (x_train, y_train), (x_test, y_test)
 
 
