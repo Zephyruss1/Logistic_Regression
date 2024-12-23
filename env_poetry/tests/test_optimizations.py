@@ -5,7 +5,7 @@ import numpy as np
 sys.path.append("..")
 from src.logistic_regression import LogisticRegression
 from datasets.data_preprocess import data_preprocess
-from src.options import args_parser
+from scripts.options import args_parser
 
 # Parse arguments
 args = args_parser(test_case=True)
