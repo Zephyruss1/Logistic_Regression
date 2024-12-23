@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import pickle as pkl
 import numpy as np
 from matplotlib import rcParams
-from options import args_parser
+from scripts.options import args_parser
 
 rcParams.update({"font.size": 18, "text.usetex": True})
 
