@@ -1,11 +1,13 @@
 import sys
-
-sys.path.append("../datasets")
-
 import os
+sys.path.append("../datasets")
+sys.path.append(os.path.abspath(
+    os.path.join(os.path.dirname(__file__), "..")
+))
+
 import numpy as np
 import pickle as pkl
-from datasets.data_preprocess import data_preprocess
+from data_preprocess import data_preprocess
 from options import args_parser
 import datetime
 from plot import plot_logreg
@@ -66,7 +68,7 @@ def main_run():
 
             ask_model = input("List of available models:\n1. Logistic Regression\n2. XGBoost\n->: ")
             if ask_model == "1":
-                from src import logistic_regression
+                import logistic_regression
                 print("learning rate: ", _args.lr)
                 print("Optimizer: ", _args.optimizer)
                 print("-------------------------")
@@ -101,7 +103,7 @@ def main_run():
                 print("Accuracy: {:.1f}%".format(percent_correct))
             elif ask_model == "2":
                 def xgboost_scratch(param: dict):
-                    from src.xgboost_scratch import XGBoostModel
+                    from xgboost_scratch import XGBoostModel
                     # train the from-scratch XGBoost model
                     model_scratch = XGBoostModel(param, x_train, y_train, random_seed=42)
                     model_scratch.fit(SquaredErrorObjective(), ask_boost_round(),
@@ -123,7 +125,7 @@ def main_run():
                 }
                 from pprint import pprint
                 if optuna_msg.lower() == 'y':
-                    from src import find_best_parameters
+                    import find_best_parameters
                     best_params = find_best_parameters.main()
                     pprint({"Best Parameters": best_params})
                     print("Running xgboost from scratch with best parameters...")
@@ -143,7 +145,7 @@ def main_run():
 
 main_run()
 
-file_name = "./results/{}_{}.pkl".format("logreg", _args.optimizer)
+file_name = "../results/{}_{}.pkl".format("logreg", _args.optimizer)
 file_name = os.path.join(current_work_dir, file_name)
 with open(file_name, "wb") as f:
     pkl.dump([weight_diff_list, obj_diff_list], f)
