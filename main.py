@@ -1,46 +1,21 @@
 import sys
 import os
 sys.path.append("datasets")
+sys.path.append("scripts")
 sys.path.append(os.path.abspath(os.path.dirname(__file__)))
 
 import numpy as np
 import pickle as pkl
-from data_preprocess import data_preprocess
-from options import args_parser
-import datetime
-from plot import plot_logreg
+from datasets.data_preprocess import data_preprocess
+from scripts.options import args_parser
+from scripts.others import elapsed_time, ask_boost_round
+from scripts.plot import plot_logreg
 import logging
+from scripts.squared_error_objective import SquaredErrorObjective
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 current_work_dir = os.path.dirname(__file__)
-
-
-def elapsed_time(func):
-    def wrapper(*args, **kwargs):
-        start_time = datetime.datetime.now()
-        start_time.strftime("%H:%M:%S")
-        result = func(*args, **kwargs)
-        end_time = datetime.datetime.now()
-        print("===" * 15)
-        print("Elapsed time: ", end_time - start_time)
-        print("===" * 15)
-        return result
-
-    return wrapper
-
-def ask_boost_round():
-    ask_boost_round = input("Do you want to change the number of boosting rounds? [100]: ")
-    if ask_boost_round:
-        try:
-            num_boost_round = int(ask_boost_round)
-            print(f"Number of boosting rounds: {num_boost_round}")
-        except ValueError:
-            raise ValueError("Please enter an integer value.")
-    else:
-        num_boost_round = 100
-        print(f"Number of boosting rounds: {num_boost_round}")
-    return num_boost_round
 
 weight_diff_list = []
 obj_diff_list = []
@@ -48,17 +23,6 @@ obj_diff_list = []
 parser = args_parser()
 _args, unknown = parser.parse_known_args()
 
-
-class Objective:
-    def loss(self, y, pred): raise NotImplementedError
-    def gradient(self, y, pred): raise NotImplementedError
-    def hessian(self, y, pred): raise NotImplementedError
-
-
-class SquaredErrorObjective(Objective):
-    def loss(self, y, pred): return np.mean((y - pred) ** 2)
-    def gradient(self, y, pred): return pred - y
-    def hessian(self, y, pred): return np.ones(len(y))
 
 @elapsed_time
 def main_run():
@@ -68,7 +32,7 @@ def main_run():
 
             ask_model = input("List of available models:\n1. Logistic Regression\n2. XGBoost\n->: ")
             if ask_model == "1":
-                import logistic_regression
+                from src import logistic_regression
                 print("learning rate: ", _args.lr)
                 print("Optimizer: ", _args.optimizer)
                 print("-------------------------")
@@ -103,7 +67,7 @@ def main_run():
                 print("Accuracy: {:.1f}%".format(percent_correct))
             elif ask_model == "2":
                 def xgboost_scratch(param: dict):
-                    from xgboost_scratch import XGBoostModel
+                    from src.xgboost_scratch import XGBoostModel
                     # train the from-scratch XGBoost model
                     model_scratch = XGBoostModel(param, x_train, y_train, random_seed=42)
                     model_scratch.fit(SquaredErrorObjective(), ask_boost_round(),
@@ -125,7 +89,7 @@ def main_run():
                 }
                 from pprint import pprint
                 if optuna_msg.lower() == 'y':
-                    import find_best_parameters
+                    from src import find_best_parameters
                     best_params = find_best_parameters.main()
                     pprint({"Best Parameters": best_params})
                     print("Running xgboost from scratch with best parameters...")
@@ -145,7 +109,7 @@ def main_run():
 
 main_run()
 
-file_name = "../results/{}_{}.pkl".format("logreg", _args.optimizer)
+file_name = "results/{}_{}.pkl".format("logreg", _args.optimizer)
 file_name = os.path.join(current_work_dir, file_name)
 with open(file_name, "wb") as f:
     pkl.dump([weight_diff_list, obj_diff_list], f)

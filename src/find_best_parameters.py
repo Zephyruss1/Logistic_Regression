@@ -1,7 +1,7 @@
 import optuna
 from xgboost_scratch import XGBoostModel
-import numpy as np
-from src.options import args_parser
+from scripts.squared_error_objective import SquaredErrorObjective
+from scripts.options import args_parser
 from datasets.data_preprocess import data_preprocess
 
 _args = args_parser()
@@ -29,20 +29,9 @@ else:
     N_TRIALS = 50
     print(f"Number of trials: {N_TRIALS}")
 
-class Objective:
-    def loss(self, y, pred): raise NotImplementedError
-    def gradient(self, y, pred): raise NotImplementedError
-    def hessian(self, y, pred): raise NotImplementedError
-
-
-class SquaredErrorObjective(Objective):
-    def loss(self, y, pred): return np.mean((y - pred) ** 2)
-    def gradient(self, y, pred): return pred - y
-    def hessian(self, y, pred): return np.ones(len(y))
-
 
 def objective(trial):
-    from src.options import args_parser
+    from scripts.options import args_parser
     from datasets.data_preprocess import data_preprocess
     _args = args_parser()
     (X_train, y_train), (X_test, y_test) = data_preprocess(_args)
