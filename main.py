@@ -1,9 +1,7 @@
 import sys
 import os
-sys.path.append("../datasets")
-sys.path.append(os.path.abspath(
-    os.path.join(os.path.dirname(__file__), "..")
-))
+sys.path.append("datasets")
+sys.path.append(os.path.abspath(os.path.dirname(__file__)))
 
 import numpy as np
 import pickle as pkl
@@ -46,7 +44,9 @@ def ask_boost_round():
 
 weight_diff_list = []
 obj_diff_list = []
-_args = args_parser()
+
+parser = args_parser()
+_args, unknown = parser.parse_known_args()
 
 
 class Objective:
