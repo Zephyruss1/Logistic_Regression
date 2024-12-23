@@ -3,7 +3,7 @@ import datetime
 import sys
 
 sys.path.append("..")
-from main import elapsed_time
+from scripts.others import elapsed_time, ask_boost_round
 
 class TestScripts(unittest.TestCase):
     def test_ask_boost_round(self):
@@ -29,3 +29,7 @@ class TestScripts(unittest.TestCase):
         end_time = datetime.datetime.now()
         self.assertEqual(result, "Completed")
         self.assertLess(end_time - start_time, datetime.timedelta(seconds=5))
+
+
+if __name__ == "__main__":
+    unittest.main()
