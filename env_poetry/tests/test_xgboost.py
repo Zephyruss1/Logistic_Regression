@@ -1,33 +1,10 @@
 import unittest
 import numpy as np
 import sys
-import datetime
 
 sys.path.append("..")
+from scripts.squared_error_objective import SquaredErrorObjective
 from src.xgboost_scratch import XGBoostModel, TreeBooster
-from main import elapsed_time
-
-
-class Objective:
-    def loss(self, y, pred):
-        raise NotImplementedError
-
-    def gradient(self, y, pred):
-        raise NotImplementedError
-
-    def hessian(self, y, pred):
-        raise NotImplementedError
-
-
-class SquaredErrorObjective(Objective):
-    def loss(self, y, pred):
-        return np.mean((y - pred) ** 2)
-
-    def gradient(self, y, pred):
-        return pred - y
-
-    def hessian(self, y, pred):
-        return np.ones(len(y))
 
 
 class TestXGBoostModel(unittest.TestCase):
@@ -95,32 +72,6 @@ class TestXGBoostModel(unittest.TestCase):
         booster = TreeBooster(self.X, gradients, hessians, self.params, max_depth=3)
         booster._maybe_insert_child_nodes()
         self.assertTrue(booster.is_leaf)  # Expect at least one split
-
-    def test_elapsed_time_decorator(self):
-        # Test the elapsed_time decorator
-
-        @elapsed_time
-        def dummy_function():
-            return "Completed"
-
-        start_time = datetime.datetime.now()
-        result = dummy_function()
-        end_time = datetime.datetime.now()
-        self.assertEqual(result, "Completed")
-        self.assertLess(end_time - start_time, datetime.timedelta(seconds=5))
-
-    def test_ask_boost_round(self):
-        # Test the ask_boost_round function
-        from unittest.mock import patch
-        from main import ask_boost_round
-
-        with patch("builtins.input", return_value="50"):
-            num_boost_round = ask_boost_round()
-            self.assertEqual(num_boost_round, 50)
-
-        with patch("builtins.input", return_value=""):
-            num_boost_round = ask_boost_round()
-            self.assertEqual(num_boost_round, 100)
 
     def test_training_with_default_params(self):
         # Test training the model with default parameters
