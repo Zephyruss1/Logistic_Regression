@@ -1,5 +1,8 @@
 import optuna
 from xgboost_scratch import XGBoostModel
+import sys
+sys.path.append("datasets")
+sys.path.append("scripts")
 from scripts.squared_error_objective import SquaredErrorObjective
 from scripts.options import args_parser
 from datasets.data_preprocess import data_preprocess
