@@ -3,39 +3,15 @@ from xgboost_scratch import XGBoostModel
 from scripts.squared_error_objective import SquaredErrorObjective
 from scripts.options import args_parser
 from datasets.data_preprocess import data_preprocess
+from scripts.others import ask_boost_round, ask_n_trials
 
 _args = args_parser()
 (X_train, y_train), (X_test, y_test) = data_preprocess(_args)
 
-ask_boost_round = input("Do you want to change the number of boosting rounds? [50]: ")
-if ask_boost_round:
-    try:
-        NUM_BOOST_ROUND = int(ask_boost_round)
-        print(f"Number of boosting rounds: {NUM_BOOST_ROUND}")
-    except ValueError:
-        raise ValueError("Please enter an integer value.")
-else:
-    NUM_BOOST_ROUND = 50
-    print(f"Number of boosting rounds: {NUM_BOOST_ROUND}")
-
-ask_n_trials = input("Do you want to change the number of n_trials? [50]: ")
-if ask_n_trials:
-    try:
-        N_TRIALS = int(ask_n_trials)
-        print(f"Number of trials: {N_TRIALS}")
-    except ValueError:
-        raise ValueError("Please enter an integer value.")
-else:
-    N_TRIALS = 50
-    print(f"Number of trials: {N_TRIALS}")
-
+NUM_BOOST_ROUND = ask_boost_round()
+N_TRIALS = ask_n_trials()
 
 def objective(trial):
-    from scripts.options import args_parser
-    from datasets.data_preprocess import data_preprocess
-    _args = args_parser()
-    (X_train, y_train), (X_test, y_test) = data_preprocess(_args)
-
     try:
         params = {
             'max_depth': trial.suggest_int('max_depth', 1, 10),
