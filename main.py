@@ -3,6 +3,7 @@ import os
 sys.path.append("datasets")
 sys.path.append("scripts")
 sys.path.append(os.path.abspath(os.path.dirname(__file__)))
+sys.path.append(os.path.join(os.path.dirname(__file__), "src"))
 
 import numpy as np
 import pickle as pkl
@@ -77,16 +78,6 @@ def main_run():
 
                 optuna_msg = input(str('Do you want to train optuna with the xgboost scratch model? (y/n): '))
 
-                default_params = {
-                    'learning_rate': 0.1,
-                    'max_depth': 10,
-                    'subsample': 0.7,
-                    'reg_lambda': 1.3,
-                    'gamma': 0.001,
-                    'min_child_weight': 25,
-                    'base_score': 0.0,
-                    'tree_method': 'exact',
-                }
                 from pprint import pprint
                 if optuna_msg.lower() == 'y':
                     from src import find_best_parameters
@@ -95,6 +86,16 @@ def main_run():
                     print("Running xgboost from scratch with best parameters...")
                     xgboost_scratch(best_params)
                 else:
+                    default_params = {
+                        'learning_rate': 0.1,
+                        'max_depth': 10,
+                        'subsample': 0.7,
+                        'reg_lambda': 1.3,
+                        'gamma': 0.001,
+                        'min_child_weight': 25,
+                        'base_score': 0.0,
+                        'tree_method': 'exact',
+                    }
                     pprint({"Default Parameters": default_params})
                     print("---" * 15)
                     xgboost_scratch(default_params)
