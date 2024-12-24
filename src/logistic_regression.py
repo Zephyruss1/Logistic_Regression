@@ -201,7 +201,6 @@ class LogisticRegression:
         self.weights = torch.tensor(lbfgs.x, requires_grad=True, dtype=torch.float32)
         a, b = self.diff_cal(self.weights.detach().numpy())
         return a, b
-
     # -------------------DEBUG MODE----------------------- #
 
     def nelder_mead(self):
