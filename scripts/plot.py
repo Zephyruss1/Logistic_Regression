@@ -14,7 +14,7 @@ def plot_logreg():
     This function generates and saves plots comparing the weights and objective values
     of different optimization algorithms used in logistic regression. It reads the
     precomputed weights and objective values from pickle files and creates visual
-    comparisons. The plots are saved as PNG files in the `./results` directory.
+    comparisons. The plots are saved as PNG files in the `./optimization_results` directory.
 
     The function handles the following optimizers:
     - GD
@@ -43,41 +43,41 @@ def plot_logreg():
 
     try:
         logreg_GD_weights, logreg_GD_objective = pkl.load(
-            open("/home/zephyrus/Desktop/Logistic_Regression/results/logreg_GD.pkl", "rb")
+            open("/home/zephyrus/Desktop/Logistic_Regression/optimization_results/logreg_GD.pkl", "rb")
         )
         logreg_GDArmijo_weights, logreg_GDArmijo_objective = pkl.load(
-            open("/home/zephyrus/Desktop/Logistic_Regression/results/logreg_GDArmijo.pkl", "rb")
+            open("/home/zephyrus/Desktop/Logistic_Regression/optimization_results/logreg_GDArmijo.pkl", "rb")
         )
         logreg_BFGS_weights, logreg_BFGS_objective = pkl.load(
-            open("/home/zephyrus/Desktop/Logistic_Regression/results/logreg_BFGS.pkl", "rb")
+            open("/home/zephyrus/Desktop/Logistic_Regression/optimization_results/logreg_BFGS.pkl", "rb")
         )
         logreg_modifiedNewton_weights, logreg_modifiedNewton_objective = pkl.load(
-            open("/home/zephyrus/Desktop/Logistic_Regression/results/logreg_ModifiedNewton.pkl", "rb")
+            open("/home/zephyrus/Desktop/Logistic_Regression/optimization_results/logreg_ModifiedNewton.pkl", "rb")
         )
         logreg_modifiedNewtonArmijo_weights, logreg_modifiedNewtonArmijo_objective = (
-            pkl.load(open("/home/zephyrus/Desktop/Logistic_Regression/results/logreg_ModifiedNewtonArmijo.pkl", "rb"))
+            pkl.load(open("/home/zephyrus/Desktop/Logistic_Regression/optimization_results/logreg_ModifiedNewtonArmijo.pkl", "rb"))
         )
         logreg_levenbergMarquardt_weights, logreg_levenbergMarquardt_objective = (
-            pkl.load(open("/home/zephyrus/Desktop/Logistic_Regression/results/logreg_LevenbergMarquardt.pkl", "rb"))
+            pkl.load(open("/home/zephyrus/Desktop/Logistic_Regression/optimization_results/logreg_LevenbergMarquardt.pkl", "rb"))
         )
         logreg_ConjugateGradient_weights, logreg_ConjugateGradient_objective = pkl.load(
-            open("/home/zephyrus/Desktop/Logistic_Regression/results/logreg_ConjugateGradient.pkl", "rb")
+            open("/home/zephyrus/Desktop/Logistic_Regression/optimization_results/logreg_ConjugateGradient.pkl", "rb")
         )
         (
             logreg_ConjugateGradientArmijo_weights,
             logreg_ConjugateGradientArmijo_objective,
-        ) = pkl.load(open("/home/zephyrus/Desktop/Logistic_Regression/results/logreg_ConjugateGDArmijo.pkl", "rb"))
+        ) = pkl.load(open("/home/zephyrus/Desktop/Logistic_Regression/optimization_results/logreg_ConjugateGDArmijo.pkl", "rb"))
         logreg_adam_weights, logreg_adam_objective = pkl.load(
-            open("/home/zephyrus/Desktop/Logistic_Regression/results/logreg_adam.pkl", "rb")
+            open("/home/zephyrus/Desktop/Logistic_Regression/optimization_results/logreg_adam.pkl", "rb")
         )
         logreg_adamw_weights, logreg_adamw_objective = pkl.load(
-            open("/home/zephyrus/Desktop/Logistic_Regression/results/logreg_AdamW.pkl", "rb")
+            open("/home/zephyrus/Desktop/Logistic_Regression/optimization_results/logreg_AdamW.pkl", "rb")
         )
         logreg_sgd_weights, logreg_sgd_objective = pkl.load(
-            open("/home/zephyrus/Desktop/Logistic_Regression/results/logreg_sgd.pkl", "rb")
+            open("/home/zephyrus/Desktop/Logistic_Regression/optimization_results/logreg_sgd.pkl", "rb")
         )
         logreg_sgdw_weights, logreg_sgdw_objective = pkl.load(
-            open("/home/zephyrus/Desktop/Logistic_Regression/results/logreg_sgdw.pkl", "rb")
+            open("/home/zephyrus/Desktop/Logistic_Regression/optimization_results/logreg_sgdw.pkl", "rb")
         )
     except FileNotFoundError:
         print(
@@ -109,7 +109,7 @@ def plot_logreg():
             plt.xlabel("Weight Index")
             plt.ylabel("Weight Value")
             plt.legend()
-            plt.savefig("./results/comparison_weights.png", dpi=1200)
+            plt.savefig("./optimization_results/comparison_weights.png", dpi=1200)
 
         if (
             logreg_adam_objective is not None
@@ -133,7 +133,7 @@ def plot_logreg():
             plt.xlabel("Objective Index")
             plt.ylabel("Objective Value")
             plt.legend()
-            plt.savefig("./results/comparison_objective.png", dpi=1200)
+            plt.savefig("./optimization_results/comparison_objective.png", dpi=1200)
     except FileNotFoundError:
         raise FileNotFoundError(
             "File not found. Please run main.py first with relating optimization."
@@ -162,7 +162,7 @@ def plot_logreg():
             np.array(optimizer_objective) / np.sqrt(logreg_dimension),
             label=args.optimizer,
         )
-        plt.savefig(f"./results/logreg_objectives_{args.optimizer}.png", dpi=1200)
+        plt.savefig(f"./optimization_results/logreg_objectives_{args.optimizer}.png", dpi=1200)
     else:
         raise ValueError("Invalid optimizer: {}".format(args.optimizer))
 
@@ -195,7 +195,7 @@ def plot_logreg():
     if args.optimizer in plot_weights:
         optimizer_weights = plot_weights[args.optimizer]
         plt.plot(range(len(optimizer_weights)), optimizer_weights, label=args.optimizer)
-        plt.savefig(f"./results/logreg_weights_{args.optimizer}.png", dpi=1200)
+        plt.savefig(f"./optimization_results/logreg_weights_{args.optimizer}.png", dpi=1200)
     else:
         raise ValueError("Invalid optimizer: {}".format(args.optimizer))
     plt.legend()
