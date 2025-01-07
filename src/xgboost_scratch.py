@@ -1,5 +1,5 @@
 from collections import defaultdict
-
+import streamlit as st
 import numpy as np
 import pandas as pd
 
@@ -87,12 +87,19 @@ class XGBoostModel:
             current_predictions += self.learning_rate * booster.predict(self.X)
             self.boosters.append(booster)
             if verboose:
-                print(f'Round: {i} | train loss: {objective.loss(self.y, current_predictions)}')
+                st.write(f'Round: {i} | train loss: {objective.loss(self.y, current_predictions)}')
 
     def predict(self, X):
         booster_preds = np.array([booster.predict(X) for booster in self.boosters])
         return self.base_prediction + self.learning_rate * booster_preds.sum(axis=0)
 
+    def predict_with_weights(self):
+        import pickle as pkl
+        try:
+            with open("/models/XGBoost_weights.pkl", "rb") as f:
+                weights = pkl.load(f)
+        except FileNotFoundError:
+            st.write("File not found. Please check /models folder.")
 
 class TreeBooster:
     """
