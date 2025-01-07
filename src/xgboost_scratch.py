@@ -76,7 +76,7 @@ class XGBoostModel:
 
     def fit(self, objective, num_boost_round, verboose=False):
         current_predictions = np.zeros_like(self.y) + self.base_prediction
-
+        if verboose is False: print("Verboose: False")
         for i in range(num_boost_round):
             gradients = objective.gradient(self.y, current_predictions)
             hessians = objective.hessian(self.y, current_predictions)
@@ -88,7 +88,6 @@ class XGBoostModel:
             self.boosters.append(booster)
             if verboose:
                 print(f'Round: {i} | train loss: {objective.loss(self.y, current_predictions)}')
-            else: print("Training (verboose == False)...")
 
     def predict(self, X):
         booster_preds = np.array([booster.predict(X) for booster in self.boosters])
