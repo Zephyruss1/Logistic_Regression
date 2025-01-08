@@ -29,11 +29,11 @@ def ask_n_trials():
     ask_n_trials = input("Do you want to change the number of n_trials? [50]: ")
     if ask_n_trials:
         try:
-            N_TRIALS = int(ask_n_trials)
-            print(f"Number of trials: {N_TRIALS}")
+            n_trials = int(ask_n_trials)
+            print(f"Number of trials: {n_trials}")
         except ValueError:
             raise ValueError("Please enter an integer value.")
     else:
-        N_TRIALS = 50
-        print(f"Number of trials: {N_TRIALS}")
-    return N_TRIALS
+        n_trials = 50
+        print(f"Number of trials: {n_trials}")
+    return n_trials
