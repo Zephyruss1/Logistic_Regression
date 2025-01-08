@@ -1,6 +1,5 @@
 import streamlit as st
 import pandas as pd
-import matplotlib.pyplot as plt
 from scripts.options import args_parser
 from datasets.data_preprocess import data_preprocess
 from src.xgboost_scratch import XGBoostModel
