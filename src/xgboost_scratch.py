@@ -76,7 +76,7 @@ class XGBoostModel:
 
     def fit(self, objective, num_boost_round, verboose=False):
         current_predictions = np.zeros_like(self.y) + self.base_prediction
-        if verboose is False: print("Verboose: False")
+        losses = []
         for i in range(num_boost_round):
             gradients = objective.gradient(self.y, current_predictions)
             hessians = objective.hessian(self.y, current_predictions)
@@ -86,8 +86,14 @@ class XGBoostModel:
                                   self.max_depth, sample_idxs)
             current_predictions += self.learning_rate * booster.predict(self.X)
             self.boosters.append(booster)
+
+            loss = objective.loss(self.y, current_predictions)
+            losses.append(loss)
+
             if verboose:
-                st.write(f'Round: {i} | train loss: {objective.loss(self.y, current_predictions)}')
+                st.write(f'Round: {i} | Train Loss: {loss}')
+
+        return losses
 
     def predict(self, X):
         booster_preds = np.array([booster.predict(X) for booster in self.boosters])
