@@ -4,6 +4,8 @@ from scripts.options import args_parser
 from datasets.data_preprocess import data_preprocess
 from src.xgboost_scratch import XGBoostModel
 from scripts.squared_error_objective import SquaredErrorObjective
+from sklearn.metrics import r2_score
+import plotly_express as px
 
 # Set page configuration
 st.set_page_config(
@@ -87,12 +89,8 @@ if st.button("Run Prediction"):
             st.success(f"Training completed! Loss Score: {loss_score:.4f}")
             st.write(f"Number of Boosting Rounds: {num_boost_round}")
 
-            # Display metrics
-            from sklearn.metrics import r2_score
-
             r2 = r2_score(y_test, predictions)
             st.write(f"R² Score: {r2:.4f}")
-            import plotly_express as px
 
             if losses:
                 st.subheader("Loss Progression")
