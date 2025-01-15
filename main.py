@@ -63,9 +63,19 @@ def main_run():
                         break
 
                 val = Model.getTest() > 0.5
+                weights = Model.weights
                 val2 = y_test > 0.5
                 percent_correct = np.mean(val == val2) * 100
                 print("Accuracy: {:.1f}%".format(percent_correct))
+                with open("models/logistic_regression_weights.pkl", "wb") as weight_file:
+                    pkl.dump(weights, weight_file)
+
+                print("Weights saved successfully to logistic_regression_weights.pkl.")
+                file_name = "optimization_results/{}_{}.pkl".format("logreg", _args.optimizer)
+                file_name = os.path.join(current_work_dir, file_name)
+                with open(file_name, "wb") as f:
+                    pkl.dump([weight_diff_list, obj_diff_list], f)
+                plot_logreg()
             elif ask_model == "2":
                 def xgboost_scratch(param: dict):
                     from src.xgboost_scratch import XGBoostModel
@@ -73,6 +83,7 @@ def main_run():
                     model_scratch = XGBoostModel(param, x_train, y_train, random_seed=42)
                     model_scratch.fit(SquaredErrorObjective(), ask_boost_round(),
                                       verboose=True)
+                    model_scratch.save_weights()
                     pred_scratch = model_scratch.predict(x_test)
                     print(f'Loss Score: {SquaredErrorObjective().loss(y_test, pred_scratch)}')
 
@@ -109,9 +120,3 @@ def main_run():
 
 
 main_run()
-
-file_name = "results/{}_{}.pkl".format("logreg", _args.optimizer)
-file_name = os.path.join(current_work_dir, file_name)
-with open(file_name, "wb") as f:
-    pkl.dump([weight_diff_list, obj_diff_list], f)
-plot_logreg()
