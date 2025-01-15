@@ -2,6 +2,7 @@ from collections import defaultdict
 import streamlit as st
 import numpy as np
 import pandas as pd
+import pickle as pkl
 
 
 class XGBoostModel:
@@ -91,6 +92,7 @@ class XGBoostModel:
             losses.append(loss)
 
             if verboose:
+                print(f'Round: {i} | Train Loss: {loss}')
                 st.write(f'Round: {i} | Train Loss: {loss}')
 
         return losses
@@ -99,13 +101,13 @@ class XGBoostModel:
         booster_preds = np.array([booster.predict(X) for booster in self.boosters])
         return self.base_prediction + self.learning_rate * booster_preds.sum(axis=0)
 
-    def predict_with_weights(self):
-        import pickle as pkl
+    def save_weights(self):
         try:
-            with open("/models/XGBoost_weights.pkl", "rb") as f:
-                weights = pkl.load(f)
+            with open("../models/XGBoost_weights.pkl", "wb") as f:
+                pkl.dump(self.boosters, f)
+                print("Model weights saved successfully.")
         except FileNotFoundError:
-            st.write("File not found. Please check /models folder.")
+            st.write("Save failed. Please check file.")
 
 class TreeBooster:
     """
