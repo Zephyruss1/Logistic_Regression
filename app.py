@@ -4,7 +4,7 @@ from scripts.options import args_parser
 from datasets.data_preprocess import data_preprocess
 from src.xgboost_scratch import XGBoostModel
 from scripts.squared_error_objective import SquaredErrorObjective
-from sklearn.metrics import r2_score
+from scripts.others import r2_score
 import plotly_express as px
 
 # Set page configuration
