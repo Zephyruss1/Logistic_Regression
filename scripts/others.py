@@ -37,3 +37,10 @@ def ask_n_trials():
         n_trials = 50
         print(f"Number of trials: {n_trials}")
     return n_trials
+
+def r2_score(y_true, y_pred):
+    y_mean = sum(y_true) / len(y_true)
+    tss = sum((y - y_mean) ** 2 for y in y_true)
+    rss = sum((y_true[i] - y_pred[i]) ** 2 for i in range(len(y_true)))
+    r2 = 1 - (rss / tss)
+    return r2
