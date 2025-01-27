@@ -1,5 +1,6 @@
 # Logistic Regression & XGBoost (From Scratch)
 This repository provides implementations of **Logistic Regression** and **XGBoost** algorithms built entirely from scratch. The intent is to offer a detailed look at the underlying mechanisms of these machine learning techniques, enabling a deeper understanding and customization for research or educational purposes.
+
 ## Features
 ### Logistic Regression (with multiple optimization algorithms)
 - Implements various optimization methods for parameter updates, including gradient descent, Newton's method, and advanced methods like **Adam**, **AdamW**, and **BFGS**.
@@ -47,16 +48,20 @@ This repository provides implementations of **Logistic Regression** and **XGBoos
 ### Arguments/Configurations
 - **`options.py`:** Handles command-line argument parsing for hyperparameter configurations for both Logistic Regression and XGBoost.
 
+### Web Application
+- **`app.py`:** Streamlit-based web application for interactive model training and prediction.
+
 ## Installation
 ### Prerequisites
 Ensure the following dependencies are installed:
 - Python 3.12 or newer
-- Required libraries: `numpy`, `pandas`, `cvxpy`, `optuna`, `scikit-learn`, `xgboost`, `matplotlib`, `pytest`, `torch`
+- Required libraries: `numpy`, `pandas`, `cvxpy`, `optuna`, `scikit-learn`, `xgboost`, `matplotlib`, `pytest`, `torch`, `streamlit`
 
 Install dependencies using:
 ``` bash
 poetry install 
 ```
+
 ## How to Use
 ### Dataset Preparation
 The project uses the **MNIST dataset** (for handwritten digit classification) available in `./mnist/`. Ensure you download ⬇️ the binary MNIST files and place them correctly:
@@ -78,17 +83,27 @@ python main.py
 2. Specify model hyperparameters via CLI or use defaults.
 3. View metrics such as loss, weights, and testing accuracy.
 
+### Running the Web Application
+1. Ensure proper dependencies are installed.
+2. Run `app.py` to start the Streamlit web application.
+``` bash
+streamlit run app.py
+```
+3. Use the web interface to interactively train and predict using the models.
+
 ### Hyperparameter Tuning with Optuna
 Fine-tune hyperparameters for XGBoost using `find_best_parameters.py`.
 Run:
 ``` bash
 python find_best_parameters.py
 ```
+
 ### Tests
 Run unit tests for all modules using `pytest`:
 ``` bash
 pytest
 ```
+
 ## Key Functionalities
 ### Logistic Regression:
 1. Supports various optimizers:
