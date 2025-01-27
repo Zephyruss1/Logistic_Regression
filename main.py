@@ -2,8 +2,7 @@ import sys
 import os
 sys.path.append("datasets")
 sys.path.append("scripts")
-sys.path.append(os.path.abspath(os.path.dirname(__file__)))
-sys.path.append(os.path.join(os.path.dirname(__file__), "src"))
+sys.path.append("models")
 
 import numpy as np
 import pickle as pkl
@@ -31,7 +30,7 @@ def main_run():
         try:
             (x_train, y_train), (x_test, y_test) = data_preprocess(_args)
 
-            ask_model = input("List of available models:\n1. Logistic Regression\n2. XGBoost\n->: ")
+            ask_model = input("List of available models:\n1. Logistic Regression\n2. XGBoost\n3. Exit\n->: ")
             if ask_model == "1":
                 from src import logistic_regression
                 print("learning rate: ", _args.lr)
@@ -67,7 +66,7 @@ def main_run():
                 val2 = y_test > 0.5
                 percent_correct = np.mean(val == val2) * 100
                 print("Accuracy: {:.1f}%".format(percent_correct))
-                with open("models/logistic_regression_weights.pkl", "wb") as weight_file:
+                with open(os.path.join(current_work_dir, "models", "logistic_regression_weights.pkl"), "wb") as weight_file:
                     pkl.dump(weights, weight_file)
 
                 print("Weights saved successfully to logistic_regression_weights.pkl.")
@@ -110,6 +109,8 @@ def main_run():
                     pprint({"Default Parameters": default_params})
                     print("---" * 15)
                     xgboost_scratch(default_params)
+            elif ask_model == "3":
+                sys.exit() 
             else:
                 raise ValueError("Please enter a valid model.")
 
