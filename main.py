@@ -66,7 +66,7 @@ def main_run():
                 val2 = y_test > 0.5
                 percent_correct = np.mean(val == val2) * 100
                 print("Accuracy: {:.1f}%".format(percent_correct))
-                with open(os.path.join(current_work_dir, "models", "logistic_regression_weights.pkl"), "wb") as weight_file:
+                with open(os.path.join(current_work_dir, "optimization_results", "logistic_regression_weights.pkl"), "wb") as weight_file:
                     pkl.dump(weights, weight_file)
 
                 print("Weights saved successfully to logistic_regression_weights.pkl.")
