@@ -5,7 +5,7 @@ description = ""
 authors = [
   { name = "Zephyrus", email = "zephyrus1175@yahoo.com" }
 ]
-requires-python = ">=3.10,<4.0"
+requires-python = ">=3.12,<4.0"
 dependencies = [
   "numpy>=2.1.0,<3.0.0",
   "cvxpy>=1.5.3,<2.0.0",
