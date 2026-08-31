@@ -11,7 +11,7 @@ class TestScripts(unittest.TestCase):
     # Test the ask_boost_round function
     from unittest.mock import patch
 
-    from main import ask_boost_round
+    from scripts.others import ask_boost_round
 
     with patch("builtins.input", return_value="50"):
       num_boost_round = ask_boost_round()
