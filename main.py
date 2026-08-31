@@ -125,4 +125,5 @@ def main_run():
       raise ValueError(f"[MAIN ERROR]: Error occurred while running the main script: {e}")
 
 
-main_run()
+if __name__ == "__main__":
+  main_run()
