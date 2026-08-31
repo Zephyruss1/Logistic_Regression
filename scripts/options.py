@@ -21,9 +21,14 @@ def args_parser(test_case=False):
         default=0.1,
         help="penalty term for logistic regression",
     )
-
+    parser.add_argument(
+        "--comparison",
+        type=int,
+        default=0,
+        help="if 1, compare different optimization algorithms",
+    )
     if test_case:
         # For tests, return only known arguments
         known_args, _ = parser.parse_known_args()
         return known_args
-    return parser
+    return parser.parse_args()

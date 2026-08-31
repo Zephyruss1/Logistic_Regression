@@ -20,25 +20,23 @@ current_work_dir = os.path.dirname(__file__)
 weight_diff_list = []
 obj_diff_list = []
 
-parser = args_parser()
-_args, unknown = parser.parse_known_args()
-
+args = args_parser()
 
 @elapsed_time
 def main_run():
     if __name__ == "__main__":
         try:
-            (x_train, y_train), (x_test, y_test) = data_preprocess(_args)
+            (x_train, y_train), (x_test, y_test) = data_preprocess(args)
 
             ask_model = input("List of available models:\n1. Logistic Regression\n2. XGBoost\n3. Exit\n->: ")
             if ask_model == "1":
                 from src import logistic_regression
-                print("learning rate: ", _args.lr)
-                print("Optimizer: ", _args.optimizer)
+                print("learning rate: ", args.lr)
+                print("Optimizer: ", args.optimizer)
                 print("-------------------------")
 
                 Model = logistic_regression.LogisticRegression(
-                    args=_args, X_train=x_train, Y_train=y_train, X_test=x_test
+                    args=args, X_train=x_train, Y_train=y_train, X_test=x_test
                 )
 
                 weight_diff, obj_diff = Model.diff_cal(Model.weights)
@@ -50,7 +48,7 @@ def main_run():
                 print("\nmax eigenvalue of Hessian:{:.4f}".format(np.max(Eigvals)))
                 print("min eigenvalue of Hessian:{:.4f}".format(np.min(Eigvals)))
 
-                for i in range(_args.iteration):
+                for i in range(args.iteration):
                     weight_diff, obj_diff = Model.update()
                     print("\n------------ Iteration {} ------------".format(i + 1))
                     print("weight error: {:.4e}".format(weight_diff))
@@ -70,7 +68,7 @@ def main_run():
                     pkl.dump(weights, weight_file)
 
                 print("Weights saved successfully to logistic_regression_weights.pkl.")
-                file_name = "optimization_results/{}_{}.pkl".format("logreg", _args.optimizer)
+                file_name = "optimization_results/{}_{}.pkl".format("logreg", args.optimizer)
                 file_name = os.path.join(current_work_dir, file_name)
                 with open(file_name, "wb") as f:
                     pkl.dump([weight_diff_list, obj_diff_list], f)
@@ -115,9 +113,7 @@ def main_run():
                 raise ValueError("Please enter a valid model.")
 
         except Exception as e:
-            logger.error(
-                f"{__file__} | Line {e.__traceback__.tb_lineno} | An error occurred: {e} "
-            )
+            raise ValueError(f"[MAIN ERROR]: Error occurred while running the main script: {e}")
 
 
 main_run()
