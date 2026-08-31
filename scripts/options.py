@@ -1,13 +1,30 @@
 import argparse
 
+AVAILABLE_OPTIMIZERS: list[str] = [
+    "GD",
+    "ModifiedNewton",
+    "ModifiedNewtonArmijo",
+    "ConjugateGradient",
+    "ConjugateGDArmijo",
+    "LevenbergMarquardt",
+    "BFGS",
+    "LBFGS",
+    "GDArmijo",
+    "Adam",
+    "AdamW",
+    "SGD",
+    "SGDW",
+    "NelderMead",
+]
 
-def args_parser(test_case=False):
+def args_parser(test_case=False) -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--lr", type=float, default=0.1, help="learning rate for each update step"
     )
     parser.add_argument(
-        "--optimizer", type=str, default="BFGS", help="using GD for update"
+        "--optimizer", type=str, default="BFGS", help=f"Optimization algorithm (options: {', '.join(AVAILABLE_OPTIMIZERS)})",
+        choices=AVAILABLE_OPTIMIZERS
     )
     parser.add_argument(
         "--iteration",
