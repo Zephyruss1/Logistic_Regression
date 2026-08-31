@@ -3,7 +3,7 @@ name = "logistic-regression"
 version = "0.1.0"
 description = ""
 authors = [
-    { name = "Zephyrus", email = "zephyrus1175@yahoo.com" }
+  { name = "Zephyrus", email = "zephyrus1175@yahoo.com" }
 ]
 requires-python = ">=3.10,<4.0"
 dependencies = [
@@ -30,6 +30,7 @@ dev = [
   "jupyter>=1.1.1,<2.0.0",
   "ruff>=0.7.2,<0.8.0",
   "pandas>=2.2.3,<3.0.0",
+  "pre-commit>=4.6.2",
 ]
 
 [build-system]
@@ -41,3 +42,7 @@ package = false
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/logistic_regression"]
+
+[tool.ruff.format]
+indent-style = "space"
+indent-width = 2
