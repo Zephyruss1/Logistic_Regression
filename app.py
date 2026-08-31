@@ -109,7 +109,7 @@ if st.button("Run Prediction"):
                 )
 
                 # Show the plot in Streamlit
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, width='stretch')
             else:
                 st.warning("No losses were recorded during training.")
 
