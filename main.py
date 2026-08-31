@@ -1,16 +1,19 @@
-import sys
 import os
+import sys
+
 sys.path.append("datasets")
 sys.path.append("scripts")
 sys.path.append("models")
 
-import numpy as np
+import logging
 import pickle as pkl
+
+import numpy as np
+
 from datasets.data_preprocess import data_preprocess
 from scripts.options import args_parser
-from scripts.others import elapsed_time, ask_boost_round
+from scripts.others import ask_boost_round, elapsed_time
 from scripts.plot import plot_logreg
-import logging
 from scripts.squared_error_objective import SquaredErrorObjective
 
 logging.basicConfig(level=logging.INFO)
@@ -22,98 +25,104 @@ obj_diff_list = []
 
 args = args_parser()
 
+
 @elapsed_time
 def main_run():
-    if __name__ == "__main__":
-        try:
-            (x_train, y_train), (x_test, y_test) = data_preprocess(args)
+  if __name__ == "__main__":
+    try:
+      (x_train, y_train), (x_test, y_test) = data_preprocess(args)
 
-            ask_model = input("List of available models:\n1. Logistic Regression\n2. XGBoost\n3. Exit\n->: ")
-            if ask_model == "1":
-                from src import logistic_regression
-                print("learning rate: ", args.lr)
-                print("Optimizer: ", args.optimizer)
-                print("-------------------------")
+      ask_model = input("List of available models:\n1. Logistic Regression\n2. XGBoost\n3. Exit\n->: ")
+      if ask_model == "1":
+        from src import logistic_regression
 
-                Model = logistic_regression.LogisticRegression(
-                    args=args, X_train=x_train, Y_train=y_train, X_test=x_test
-                )
+        print("learning rate: ", args.lr)
+        print("Optimizer: ", args.optimizer)
+        print("-------------------------")
 
-                weight_diff, obj_diff = Model.diff_cal(Model.weights)
-                print("\n------------ Initial ------------")
-                print("weight error: {:.4e}".format(weight_diff))
-                print("objective error: {:.4e}".format(obj_diff))
+        Model = logistic_regression.LogisticRegression(args=args, X_train=x_train, Y_train=y_train, X_test=x_test)
 
-                Eigvals = np.linalg.eigvals(Model.pre_Hessian)
-                print("\nmax eigenvalue of Hessian:{:.4f}".format(np.max(Eigvals)))
-                print("min eigenvalue of Hessian:{:.4f}".format(np.min(Eigvals)))
+        weight_diff, obj_diff = Model.diff_cal(Model.weights)
+        print("\n------------ Initial ------------")
+        print(f"weight error: {weight_diff:.4e}")
+        print(f"objective error: {obj_diff:.4e}")
 
-                for i in range(args.iteration):
-                    weight_diff, obj_diff = Model.update()
-                    print("\n------------ Iteration {} ------------".format(i + 1))
-                    print("weight error: {:.4e}".format(weight_diff))
-                    print("objective error: {:.4e}".format(obj_diff))
-                    weight_diff_list.append(weight_diff)
-                    obj_diff_list.append(obj_diff)
+        Eigvals = np.linalg.eigvals(Model.pre_Hessian)
+        print(f"\nmax eigenvalue of Hessian:{np.max(Eigvals):.4f}")
+        print(f"min eigenvalue of Hessian:{np.min(Eigvals):.4f}")
 
-                    if weight_diff / np.sqrt(Model.dimension) <= 1e-5:
-                        break
+        for i in range(args.iteration):
+          weight_diff, obj_diff = Model.update()
+          print(f"\n------------ Iteration {i + 1} ------------")
+          print(f"weight error: {weight_diff:.4e}")
+          print(f"objective error: {obj_diff:.4e}")
+          weight_diff_list.append(weight_diff)
+          obj_diff_list.append(obj_diff)
 
-                val = Model.getTest() > 0.5
-                weights = Model.weights
-                val2 = y_test > 0.5
-                percent_correct = np.mean(val == val2) * 100
-                print("Accuracy: {:.1f}%".format(percent_correct))
-                with open(os.path.join(current_work_dir, "optimization_results", "logistic_regression_weights.pkl"), "wb") as weight_file:
-                    pkl.dump(weights, weight_file)
+          if weight_diff / np.sqrt(Model.dimension) <= 1e-5:
+            break
 
-                print("Weights saved successfully to logistic_regression_weights.pkl.")
-                file_name = "optimization_results/{}_{}.pkl".format("logreg", args.optimizer)
-                file_name = os.path.join(current_work_dir, file_name)
-                with open(file_name, "wb") as f:
-                    pkl.dump([weight_diff_list, obj_diff_list], f)
-                plot_logreg()
-            elif ask_model == "2":
-                def xgboost_scratch(param: dict):
-                    from src.xgboost_scratch import XGBoostModel
-                    # train the from-scratch XGBoost model
-                    model_scratch = XGBoostModel(param, x_train, y_train, random_seed=42)
-                    model_scratch.fit(SquaredErrorObjective(), ask_boost_round(),
-                                      verboose=True)
-                    model_scratch.save_weights()
-                    pred_scratch = model_scratch.predict(x_test)
-                    print(f'Loss Score: {SquaredErrorObjective().loss(y_test, pred_scratch)}')
+        val = Model.getTest() > 0.5
+        weights = Model.weights
+        val2 = y_test > 0.5
+        percent_correct = np.mean(val == val2) * 100
+        print(f"Accuracy: {percent_correct:.1f}%")
+        with open(
+          os.path.join(current_work_dir, "optimization_results", "logistic_regression_weights.pkl"),
+          "wb",
+        ) as weight_file:
+          pkl.dump(weights, weight_file)
 
-                optuna_msg = input(str('Do you want to train optuna with the xgboost scratch model? (y/n): '))
+        print("Weights saved successfully to logistic_regression_weights.pkl.")
+        file_name = "optimization_results/{}_{}.pkl".format("logreg", args.optimizer)
+        file_name = os.path.join(current_work_dir, file_name)
+        with open(file_name, "wb") as f:
+          pkl.dump([weight_diff_list, obj_diff_list], f)
+        plot_logreg()
+      elif ask_model == "2":
 
-                from pprint import pprint
-                if optuna_msg.lower() == 'y':
-                    from src import find_best_parameters
-                    best_params = find_best_parameters.main()
-                    pprint({"Best Parameters": best_params})
-                    print("Running xgboost from scratch with best parameters...")
-                    xgboost_scratch(best_params)
-                else:
-                    default_params = {
-                        'learning_rate': 0.1,
-                        'max_depth': 10,
-                        'subsample': 0.7,
-                        'reg_lambda': 1.3,
-                        'gamma': 0.001,
-                        'min_child_weight': 25,
-                        'base_score': 0.0,
-                        'tree_method': 'exact',
-                    }
-                    pprint({"Default Parameters": default_params})
-                    print("---" * 15)
-                    xgboost_scratch(default_params)
-            elif ask_model == "3":
-                sys.exit() 
-            else:
-                raise ValueError("Please enter a valid model.")
+        def xgboost_scratch(param: dict):
+          from src.xgboost_scratch import XGBoostModel
 
-        except Exception as e:
-            raise ValueError(f"[MAIN ERROR]: Error occurred while running the main script: {e}")
+          # train the from-scratch XGBoost model
+          model_scratch = XGBoostModel(param, x_train, y_train, random_seed=42)
+          model_scratch.fit(SquaredErrorObjective(), ask_boost_round(), verboose=True)
+          model_scratch.save_weights()
+          pred_scratch = model_scratch.predict(x_test)
+          print(f"Loss Score: {SquaredErrorObjective().loss(y_test, pred_scratch)}")
+
+        optuna_msg = input("Do you want to train optuna with the xgboost scratch model? (y/n): ")
+
+        from pprint import pprint
+
+        if optuna_msg.lower() == "y":
+          from src import find_best_parameters
+
+          best_params = find_best_parameters.main()
+          pprint({"Best Parameters": best_params})
+          print("Running xgboost from scratch with best parameters...")
+          xgboost_scratch(best_params)
+        else:
+          default_params = {
+            "learning_rate": 0.1,
+            "max_depth": 10,
+            "subsample": 0.7,
+            "reg_lambda": 1.3,
+            "gamma": 0.001,
+            "min_child_weight": 25,
+            "base_score": 0.0,
+            "tree_method": "exact",
+          }
+          pprint({"Default Parameters": default_params})
+          print("---" * 15)
+          xgboost_scratch(default_params)
+      elif ask_model == "3":
+        sys.exit()
+      else:
+        raise ValueError("Please enter a valid model.")
+
+    except Exception as e:
+      raise ValueError(f"[MAIN ERROR]: Error occurred while running the main script: {e}")
 
 
 main_run()
