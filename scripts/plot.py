@@ -13,21 +13,24 @@ rcParams.update({"font.size": 18, "text.usetex": True})
 OPTIMIZER_PKL_FILES = {
     "GD": "logreg_GD.pkl",
     "GDArmijo": "logreg_GDArmijo.pkl",
+    "LBFGS": "logreg_LBFGS.pkl",
     "BFGS": "logreg_BFGS.pkl",
     "ModifiedNewton": "logreg_ModifiedNewton.pkl",
     "ModifiedNewtonArmijo": "logreg_ModifiedNewtonArmijo.pkl",
     "LevenbergMarquardt": "logreg_LevenbergMarquardt.pkl",
     "ConjugateGradient": "logreg_ConjugateGradient.pkl",
     "ConjugateGDArmijo": "logreg_ConjugateGDArmijo.pkl",
-    "Adam": "logreg_adam.pkl",
+    "Adam": "logreg_Adam.pkl",
     "AdamW": "logreg_AdamW.pkl",
-    "SGD": "logreg_sgd.pkl",
-    "SGDW": "logreg_sgdw.pkl",
+    "SGD": "logreg_SGD.pkl",
+    "SGDW": "logreg_SGDW.pkl",
+    "NelderMead": "logreg_NelderMead.pkl",
+
 }
 COMPARISON_GROUP = ["Adam", "AdamW", "SGD", "SGDW"]
 
 
-def load_result(name):
+def load_result(name: str):
     path = PKL_PATH / OPTIMIZER_PKL_FILES[name]
     if not path.exists():
         raise FileNotFoundError(
@@ -70,6 +73,7 @@ def plot_logreg():
     - ConjugateGradient
     - ConjugateGDArmijo
     - LevenbergMarquardt
+    - LBFGS
     - BFGS
     - Adam
     - AdamW
