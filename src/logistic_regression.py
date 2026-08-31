@@ -76,6 +76,8 @@ class LogisticRegression:
         note that the gradient is averaged over all samples
         """
         sigWeights = self.sigmoid(self.X_train @ weights)
+        assert not np.isinf(sigWeights).any(), "Inf values."
+        assert not np.isnan(sigWeights).any(), "Weights contain NaN."
         matGrad = self.X_train.T @ (sigWeights - self.Y_train)
         return matGrad / self.num_samples + self.gamma * weights
 
@@ -168,19 +170,14 @@ class LogisticRegression:
             self.B = np.eye(self.dimension)
             self.last_update = np.zeros_like(gradient)
             self.last_gradient = np.zeros_like(gradient)
-
         y = gradient - self.last_gradient
         s = self.weights - self.last_update
-
         rho = 1 / np.dot(y, s) if np.dot(y, s) != 0 else 1000
         V = np.eye(self.dimension) - rho * np.outer(y, s)
 
         self.B = V.T @ self.B @ V + rho * np.outer(s, s)
-
         update_direction = -self.B @ gradient
-
-        self.weights -= self.lr * update_direction
-
+        self.weights += self.lr * update_direction
         self.last_update = self.weights
         self.last_gradient = gradient
 
