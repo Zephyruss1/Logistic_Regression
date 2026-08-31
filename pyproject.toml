@@ -43,6 +43,8 @@ package = false
 [tool.hatch.build.targets.wheel]
 packages = ["src/logistic_regression"]
 
+[tool.ruff]
+indent-width = 2
+
 [tool.ruff.format]
 indent-style = "space"
-indent-width = 2
