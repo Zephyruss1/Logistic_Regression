@@ -44,7 +44,18 @@ package = false
 packages = ["src/logistic_regression"]
 
 [tool.ruff]
+line-length = 120
 indent-width = 2
 
 [tool.ruff.format]
 indent-style = "space"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP"]
+ignore = [
+  "E501",
+  "BLE001",
+  "DTZ005",
+  "PLR0124",
+  "F841",
+]
