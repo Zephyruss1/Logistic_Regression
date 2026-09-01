@@ -67,6 +67,8 @@ def main_run():
         val2 = y_test > 0.5
         percent_correct = np.mean(val == val2) * 100
         print(f"Accuracy: {percent_correct:.1f}%")
+        result_dir = os.path.join(current_work_dir, "optimization_results")
+        os.makedirs(result_dir, exist_ok=True)
         with open(
           os.path.join(current_work_dir, "optimization_results", "logistic_regression_weights.pkl"),
           "wb",
