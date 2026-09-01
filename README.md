@@ -1,138 +1,330 @@
 # Logistic Regression & XGBoost (From Scratch)
-This repository provides implementations of **Logistic Regression** and **XGBoost** algorithms built entirely from scratch. The intent is to offer a detailed look at the underlying mechanisms of these machine learning techniques, enabling a deeper understanding and customization for research or educational purposes.
+
+This repository provides modular, high-performance implementations of **Logistic Regression** and **XGBoost** algorithms built entirely from scratch in Python. The codebase provides an in-depth, transparent look at the mathematical underpinnings, optimization algorithms, gradient-boosting mechanics, and tree-building logic of these machine learning techniques.
+
+---
+
+## Table of Contents
+
+- [Features](#features)
+  - [Logistic Regression](#logistic-regression)
+  - [XGBoost (From Scratch)](#xgboost-from-scratch)
+  - [Interactive Streamlit Web App](#interactive-streamlit-web-app)
+- [Project Structure](#project-structure)
+- [Installation & Setup](#installation--setup)
+  - [Prerequisites](#prerequisites)
+  - [Environment Setup with uv (Recommended)](#environment-setup-with-uv-recommended)
+  - [Alternative Setup with pip](#alternative-setup-with-pip)
+- [Dataset](#dataset)
+- [Usage Guide](#usage-guide)
+  - [1. CLI Training (main.py)](#1-cli-training-mainpy)
+  - [2. Interactive Web Application (app.py)](#2-interactive-web-application-apppy)
+  - [3. Hyperparameter Tuning with Optuna](#3-hyperparameter-tuning-with-optuna)
+  - [4. Convergence & Weight Plotting](#4-convergence--weight-plotting)
+- [Testing & Quality Assurance](#testing--quality-assurance)
+- [CI/CD Pipeline](#cicd-pipeline)
+- [Maintainers & Contributing](#maintainers--contributing)
+  - [Development Setup & Dependency Groups](#development-setup--dependency-groups)
+  - [Contribution Workflow](#contribution-workflow)
+
+---
 
 ## Features
-### Logistic Regression (with multiple optimization algorithms)
-- Implements various optimization methods for parameter updates, including gradient descent, Newton's method, and advanced methods like **Adam**, **AdamW**, and **BFGS**.
-- Supports **Armijo step-size search**, which dynamically adjusts the learning rate for better convergence.
-- Uses **CVXPY** for solving optimal weights for comparative analysis.
-- Extensive support for monitoring error differences (`weight_diff` and `objective_diff`) and Hessian eigenvalues.
 
-### XGBoost (Simplified Implementation)
-- Custom implementation of the Gradient Boosting Decision Tree (GBDT) model for supervised learning tasks.
-- Implements tree splitting, depth control, gradient calculation, and Hessian-based optimization.
-- Supports hyperparameter tuning such as:
-    - `learning_rate`
-    - `max_depth`
-    - `subsample`
-    - `reg_lambda` (L2 regularization)
-    - `gamma` (Split regularization)
-    - `min_child_weight`
+### Logistic Regression
 
-- Fully compatible with custom loss functions (e.g., squared error implementations).
-- Ability to predict and evaluate using an **objective interface** for gradient boosting.
+Implements binary classification with **14 first-order, second-order, quasi-Newton, and derivative-free optimization methods**:
 
-## Files Overview
-### Core Models
-- **`logistic_regression.py`:** Implements the core **Logistic Regression** model with different optimization strategies.
-- **`xgboost_scratch.py`:** Contains the simplified **XGBoost** implementation, including tree-building logic (`TreeBooster`) and the boosting mechanism (`XGBoostModel`).
+- **First-Order Optimizers:**
+  - Standard Gradient Descent (`GD`)
+  - Gradient Descent with Armijo Backtracking Line Search (`GDArmijo`)
+  - Conjugate Gradient (`ConjugateGradient`) & with Armijo search (`ConjugateGDArmijo`)
+  - Stochastic Gradient Descent (`SGD`) and SGD with decoupled weight decay (`SGDW`)
+  - Momentum-based Optimizers: `Adam` and `AdamW` (with PyTorch tensor acceleration)
+- **Second-Order & Quasi-Newton Methods:**
+  - Modified Newton's Method (`ModifiedNewton`) & with Armijo search (`ModifiedNewtonArmijo`)
+  - Levenberg-Marquardt Method (`LevenbergMarquardt`)
+  - BFGS (`BFGS`) and Memory-efficient L-BFGS (`LBFGS`)
+- **Derivative-Free Methods:**
+  - Nelder-Mead Simplex Algorithm (`NelderMead`)
+- **Analysis & Diagnostics:**
+  - Ground truth comparison using **CVXPY** convex optimization solvers (ECOS, CVXOPT).
+  - Dynamic **Armijo condition** step-size backtracking.
+  - Convergence monitoring: Objective suboptimality ($f(x^{(k)}) - p^\star$), weight difference ($\frac{1}{\sqrt{d}}\|x^{(k)} - x^\star\|_2$), and Hessian eigenvalue spectrum diagnostics.
 
-### Main Execution
-- **`main.py`:** Main execution script to train Logistic Regression or XGBoost models, with configurable hyperparameters and interactive CLI input.
+### XGBoost (From Scratch)
 
-### Dataset Management
-- **`data_preprocess.py`:** Processes **MNIST handwritten digit dataset** for training and testing (focuses on binary classification for selected digits).
-- **Directory:** Contains MNIST binary data files required for model training.
+A custom Gradient Boosted Decision Tree (GBDT) engine featuring:
 
-### Testing Modules
-- **`test_xgboost.py`:** Unit tests for the XGBoost implementation, including gradient, Hessian, splitting logic, and model predictions.
-- **`test_optimizations.py`:** Tests to validate optimization techniques for Logistic Regression.
-- **`test_dataset.py`:** Validates the loading, preprocessing, and formatting logic implemented in `data_preprocess.py`.
+- **Tree Booster (`TreeBooster`):** Recursive binary tree construction using exact (`exact`) and approximate (`approx`) histogram-based split-finding algorithms.
+- **Regularization & Shrinkage:**
+  - L2 weight leaf regularization ($\lambda$ / `reg_lambda`)
+  - Minimum loss reduction split penalty ($\gamma$ / `gamma`)
+  - `min_child_weight` Hessian sum constraint
+  - Step size shrinkage (`learning_rate`)
+- **Subsampling:** Row subsampling (`subsample`) and column subsampling by node (`colsample_bynode`).
+- **Pluggable Objective Interface:** Extensible loss architecture supporting custom first-order gradients and second-order Hessians (includes `SquaredErrorObjective`).
+- **Bayesian Optimization:** Automated hyperparameter tuning powered by **Optuna**.
+- **Model Serialization:** Save and load learned booster trees and weights.
 
-### Hyperparameter Tuning
-- **`find_best_parameters.py`:** Utilizes **Optuna** to perform hyperparameter tuning for the XGBoost model.
+### Interactive Streamlit Web App
 
-### Visualization
-- **`plot.py`:** Generates comparison plots for Logistic Regression, comparing weights and objectives across optimization methods (e.g., AdamW, SGD, etc.).
+- Modern dashboard to configure hyperparameters in real-time (`learning_rate`, `max_depth`, `subsample`, `reg_lambda`, `gamma`, `min_child_weight`, `tree_method`).
+- Interactive training execution with live loss progression graphs powered by **Plotly**.
+- $R^2$ score evaluation, predictions table viewer, and one-click CSV export.
 
-### Arguments/Configurations
-- **`options.py`:** Handles command-line argument parsing for hyperparameter configurations for both Logistic Regression and XGBoost.
+---
 
-### Web Application
-- **`app.py`:** Streamlit-based web application for interactive model training and prediction.
+## Project Structure
 
-## Installation
+```text
+Logistic_Regression/
+├── .github/
+│   └── workflows/
+│       └── ci.yml                     # GitHub Actions CI (lint, format, test)
+├── datasets/
+│   ├── __init__.py
+│   ├── data_preprocess.py             # MNIST parsing, binary filtering, normalization
+│   └── mnist/                         # Binary MNIST dataset files
+│       ├── t10k-images.idx3-ubyte
+│       ├── t10k-labels.idx1-ubyte
+│       ├── train-images.idx3-ubyte
+│       └── train-labels.idx1-ubyte
+├── scripts/
+│   ├── __init__.py
+│   ├── options.py                     # CLI argument parser and optimizer definitions
+│   ├── others.py                      # Timing decorators, CLI input prompts, R² metric
+│   ├── plot.py                        # Convergence curves and weight comparison plots
+│   └── squared_error_objective.py     # Custom objective (loss, gradient, hessian)
+├── src/
+│   ├── find_best_parameters.py        # Optuna Bayesian hyperparameter search
+│   ├── logistic_regression.py         # Core Logistic Regression & 14 optimizers
+│   └── xgboost_scratch.py             # Core XGBoost & TreeBooster implementations
+├── tests/
+│   ├── __init__.py
+│   ├── test_dataset.py                # Tests for data loader shapes, dtypes, normalization
+│   ├── test_optimizations.py          # Tests for Logistic Regression optimizers
+│   ├── test_scripts.py                # Tests for helper scripts and metrics
+│   └── test_xgboost.py                # Unit tests for booster splits, gradients, Hessians
+├── .pre-commit-config.yaml            # Pre-commit hooks configuration
+├── .python-version                    # Python version pin (3.12)
+├── app.py                             # Streamlit interactive web application
+├── LICENSE                            # License file
+├── main.py                            # CLI entry point for training and evaluation
+├── pyproject.toml                     # uv and Hatchling project specification
+├── requirements.txt                   # Frozen requirements for pip compatibility
+├── README.md                          # Project documentation
+└── uv.lock                            # uv lockfile for deterministic builds
+```
+
+---
+
+## Installation & Setup
+
 ### Prerequisites
-Ensure the following dependencies are installed:
-- Python 3.12 or newer
-- Required libraries: `numpy`, `pandas`, `cvxpy`, `optuna`, `scikit-learn`, `xgboost`, `matplotlib`, `pytest`, `torch`, `streamlit`
 
-Install dependencies using:
-``` bash
-poetry install 
+- **Python**: `>= 3.12`
+- **uv**: Fast Python package installer and resolver ([astral.sh/uv](https://astral.sh/uv/))
+
+### Environment Setup with uv (Recommended)
+
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/Zephyruss1/Logistic_Regression.git
+   cd Logistic_Regression
+   ```
+
+2. **Install dependencies and create virtual environment with uv:**
+   ```bash
+   uv sync
+   ```
+
+   To include development dependencies (pytest, ruff, pre-commit):
+   ```bash
+   uv sync --all-groups
+   ```
+
+3. **Activate the virtual environment (optional):**
+   ```bash
+   source .venv/bin/activate
+   ```
+   *(Or prepend any command with `uv run`, e.g., `uv run python main.py`)*
+
+### Alternative Setup with pip
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
 ```
 
-## How to Use
-### Dataset Preparation
-The project uses the **MNIST dataset** (for handwritten digit classification) available in `./mnist/`. Ensure you download ⬇️ the binary MNIST files and place them correctly:
-- `train-labels.idx1-ubyte`
+---
+
+## Dataset
+
+The project uses the **MNIST handwritten digit dataset** formatted as binary classification between digits `0` and `1`. Binary files are included in `datasets/mnist/`:
+
 - `train-images.idx3-ubyte`
-- `t10k-labels.idx1-ubyte`
+- `train-labels.idx1-ubyte`
 - `t10k-images.idx3-ubyte`
+- `t10k-labels.idx1-ubyte`
 
-### Running Models
-1. Ensure proper dependencies are installed.
-2. Run `main.py` to train models.
-    - The default is **XGBoost** using predefined hyperparameters.
-    - Interactive mode allows switching between **Logistic Regression** and **XGBoost** during runtime.
-``` bash
-python main.py
-```
-**Example Workflow:**
-1. Select Model: Logistic Regression or XGBoost.
-2. Specify model hyperparameters via CLI or use defaults.
-3. View metrics such as loss, weights, and testing accuracy.
+The loader in `datasets/data_preprocess.py` parses IDX binary streams, filters selected classes, normalizes pixels to $[0, 1]$, and returns flattened matrices ready for training.
 
-### Running the Web Application
-1. Ensure proper dependencies are installed.
-2. Run `app.py` to start the Streamlit web application.
-``` bash
-streamlit run app.py
-```
-3. Use the web interface to interactively train and predict using the models.
+---
 
-### Hyperparameter Tuning with Optuna
-Fine-tune hyperparameters for XGBoost using `find_best_parameters.py`.
-Run:
-``` bash
-python find_best_parameters.py
+## Usage Guide
+
+### 1. CLI Training (`main.py`)
+
+Run the interactive training script:
+
+```bash
+uv run python main.py
 ```
 
-### Tests
-Run unit tests for all modules using `pytest`:
-``` bash
-pytest
+You will be prompted to select:
+1. **Logistic Regression** — Trains Logistic Regression using the specified optimizer, calculates Hessian eigenvalues, prints iteration errors, saves weights, and generates comparison plots.
+2. **XGBoost** — Trains the from-scratch XGBoost model using default parameters or launches Optuna for hyperparameter search.
+3. **Exit**
+
+#### Customizing Logistic Regression via CLI flags:
+
+```bash
+uv run python main.py --optimizer BFGS --lr 0.1 --iteration 250 --gamma 0.1
 ```
 
-## Key Functionalities
-### Logistic Regression:
-1. Supports various optimizers:
-    - **Gradient Descent**: Standard gradient-based updates.
-    - **Modified Newton**: Leverages the Hessian matrix for curvature adjustment.
-    - **Conjugate Gradient**: Gradient direction combined with prior steps for faster convergence.
-    - **Adam & AdamW**: Advanced momentum-based optimization.
-    - **Stochastic Gradient Descent (SGD, SGD-W)**: Efficient stochastic updates.
+**Available `--optimizer` choices:**
+- `GD`, `GDArmijo`
+- `ModifiedNewton`, `ModifiedNewtonArmijo`
+- `ConjugateGradient`, `ConjugateGDArmijo`
+- `LevenbergMarquardt`
+- `BFGS`, `LBFGS`
+- `Adam`, `AdamW`
+- `SGD`, `SGDW`
+- `NelderMead`
 
-2. Pre-determines the optimal solution using **CVXPY** for comparison.
-3. Debug capabilities to ensure convergence properties hold theoretically (e.g., Hessian eigenvalue computations).
+### 2. Interactive Web Application (`app.py`)
 
-### XGBoost:
-1. Builds decision trees using **gradient** and **Hessian-based optimizations**.
-2. Implements:
-    - **Regularization:** L2 regularization (`reg_lambda`) and split penalty (`gamma`).
-    - **Subsampling:** Improves generalization by using random subsets.
-    - **Tree depth limitations:** Prevents overfitting on training data.
+Launch the Streamlit web application:
 
-3. Customizable loss functions (Squared Error provided as an example).
+```bash
+uv run streamlit run app.py
+```
 
-## Results Visualization
-1. Logistic Regression:
-    - Generates weight and loss comparison plots for various optimization methods.
+Open your browser at `http://localhost:8501` to:
+- Adjust hyperparameters on the sidebar in real time.
+- Train the XGBoost model on MNIST.
+- Inspect loss curves, $R^2$ scores, and sample predictions.
+- Download prediction results as a CSV file.
 
-2. XGBoost:
-    - Displays training metrics (e.g., training loss reduction across boosting rounds).
-    - Can integrate visualizations for hyperparameter tuning outcomes.
+### 3. Hyperparameter Tuning with Optuna
 
-## Maintainers
-- Built as an educational and practical implementation of core machine learning techniques.
-- Feel free to contribute by creating pull requests or raising issues.
+Tune XGBoost hyperparameters independently using Optuna:
+
+```bash
+uv run python src/find_best_parameters.py
+```
+
+### 4. Convergence & Weight Plotting
+
+Generate convergence and weight comparison plots:
+
+```bash
+uv run python scripts/plot.py --comparison 1
+```
+
+Generated plots are saved in the `optimization_results/` directory.
+
+---
+
+## Testing & Quality Assurance
+
+Run the complete unit test suite across data loading, optimization algorithms, helper utilities, and XGBoost logic:
+
+```bash
+uv run pytest
+```
+
+To run with verbose output:
+
+```bash
+uv run pytest tests/ -v
+```
+
+### Code Formatting & Linting
+
+We use **Ruff** for high-speed linting and code formatting:
+
+```bash
+# Check code quality
+uv run ruff check .
+
+# Check formatting
+uv run ruff format --check .
+
+# Auto-format codebase
+uv run ruff format .
+```
+
+---
+
+## CI/CD Pipeline
+
+Continuous Integration is set up via **GitHub Actions** (`.github/workflows/ci.yml`). On every push and pull request to `main`/`master`, the pipeline:
+1. Provisions Python 3.12 and sets up `uv` caching via `astral-sh/setup-uv`.
+2. Synchronizes dependencies with `uv sync`.
+3. Runs `ruff check .` and `ruff format --check .`.
+4. Executes the full `pytest` suite.
+
+---
+
+## Maintainers & Contributing
+
+Contributions, issues, and feature requests are welcome!
+
+### Development Setup & Dependency Groups
+
+The project specifies its development tools in `pyproject.toml` using `[dependency-groups]`:
+
+```toml
+[dependency-groups]
+dev = [
+  "pytest>=8.3.3,<9.0.0",   # Test execution framework
+  "ruff>=0.7.2,<0.8.0",     # Linter and code formatter
+  "pre-commit>=4.6.2",      # Git hook management
+]
+```
+
+To set up the development environment:
+
+1. **Install dev dependencies:**
+   ```bash
+   uv sync --group dev
+   # or install all dependency groups:
+   uv sync --all-groups
+   ```
+
+2. **Set up pre-commit hooks:**
+   Install the Git pre-commit hooks to automatically enforce Ruff linting and formatting on every commit:
+   ```bash
+   uv run pre-commit install
+   ```
+
+3. **Run hooks manually across all files:**
+   ```bash
+   uv run pre-commit run --all-files
+   ```
+
+### Contribution Workflow
+
+1. Fork the repository and create a new feature branch (`git checkout -b feature/my-feature`).
+2. Implement your changes, ensuring code is formatted and tested.
+3. Run the linter and test suite before committing:
+   ```bash
+   uv run ruff check .
+   uv run ruff format .
+   uv run pytest
+   ```
+4. Commit your changes and push to your fork.
+5. Submit a Pull Request targeting `main`.
