@@ -101,8 +101,6 @@ def plot_logreg():
   else:
     results = {args.optimizer: load_result(args.optimizer)}
 
-  plt.figure()
-
   try:
     plot_comparison(
       results,
@@ -130,33 +128,32 @@ def plot_logreg():
 
   optimizer_weights, optimizer_objective = results[args.optimizer]
 
-  # --- Single-optimizer plot #1 ---
+  # --- Single-optimizer plot #1: Weights Error ---
   plt.figure()
   plt.plot(
-    range(len(optimizer_objective)),
-    np.array(optimizer_objective) / np.sqrt(logreg_dimension),
+    range(len(optimizer_weights)),
+    np.array(optimizer_weights) / np.sqrt(logreg_dimension),
     label=args.optimizer,
   )
   plt.legend()
   plt.xlabel("Iterations")
   plt.ylabel(r"$\frac{1}{\sqrt{d}}\|x^{(k)}-x^{\star}\|_2$")
-  plt.title("Logistic Regression weights")
-  plt.yscale("log")
-  plt.tight_layout()
-  plt.savefig(PKL_PATH / f"logreg_objectives_{args.optimizer}.png", dpi=1200)
-  plt.show()
-  plt.pause(5)
-
-  # --- Single-optimizer plot #2 ---
-  plt.figure()
-  plt.plot(range(len(optimizer_weights)), optimizer_weights, label=args.optimizer)
-  plt.legend()
-  plt.xlabel("Iterations")
-  plt.ylabel(r"$f(x^{(k)}) - p^{\star}$")
-  plt.title("Logistic Regression objective")
+  plt.title("Logistic Regression Weights Error")
   plt.yscale("log")
   plt.tight_layout()
   plt.savefig(PKL_PATH / f"logreg_weights_{args.optimizer}.png", dpi=1200)
+
+  # --- Single-optimizer plot #2: Objective Error ---
+  plt.figure()
+  plt.plot(range(len(optimizer_objective)), optimizer_objective, label=args.optimizer)
+  plt.legend()
+  plt.xlabel("Iterations")
+  plt.ylabel(r"$f(x^{(k)}) - p^{\star}$")
+  plt.title("Logistic Regression Objective Error")
+  plt.yscale("log")
+  plt.tight_layout()
+  plt.savefig(PKL_PATH / f"logreg_objectives_{args.optimizer}.png", dpi=1200)
+
   plt.show()
 
 
