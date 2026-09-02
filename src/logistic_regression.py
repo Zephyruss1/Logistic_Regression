@@ -8,6 +8,12 @@ from scipy.special import expit
 
 EPSILON = 1e-5
 
+device = "cpu"
+if torch.cuda.is_available():
+  device = "cuda"
+elif torch.mps.is_available():
+  device = "mps"
+
 
 class LogisticRegression:
   def __init__(self, args, X_train, Y_train, X_test):
@@ -281,9 +287,7 @@ class LogisticRegression:
     a, b = self.diff_cal(self.weights)
     return a, b
 
-  def adamw(self, beta1=0.9, beta2=0.999, weight_decay=0.01, device="cpu"):
-    if torch.cuda.is_available() and torch.version.hip is not None:
-      device = "cuda"
+  def adamw(self, beta1=0.9, beta2=0.999, weight_decay=0.01, device=device):
 
     self.t += 1
     gradient = self.gradient(self.weights)
