@@ -1,4 +1,5 @@
 import inspect
+from collections import deque
 
 import cvxpy as cp
 import numpy as np
@@ -101,7 +102,7 @@ class LogisticRegression:
       "ConjugateGDArmijo": self.conjugate_gradient_with_armijo,
       "LevenbergMarquardt": self.levenberg_marquardt,
       "BFGS": self.BFGS,
-      "LBFGS": self.LBFGS,
+      "LBFGS": self.L_BFGS,
       "GDArmijo": self.gradient_descent_with_armijo,
       "Adam": self.adam,
       "AdamW": self.adamw,
@@ -180,19 +181,56 @@ class LogisticRegression:
     a, b = self.diff_cal(self.weights)
     return a, b
 
-  # -------------------DEBUG MODE----------------------- #
-  def LBFGS(self):
-    if not isinstance(self.weights, torch.Tensor):
-      self.weights = 0.1 * np.random.randn(self.dimension)
+  # https://en.wikipedia.org/wiki/Limited-memory_BFGS
+  def L_BFGS(self, m: int = 10):
+    gradient = self.gradient(self.weights)
+    if not hasattr(self, "s_history"):
+      print("DEBUG...")
+      self.s_history = deque(maxlen=m)
+      self.y_history = deque(maxlen=m)
+      self.last_weights = self.weights.copy()
+      self.last_gradient = gradient.copy()
+      self.weights += -self.lr * gradient
+      a, b = self.diff_cal(self.weights)
+      return a, b
 
-    initial_weights = self.weights.detach().numpy() if isinstance(self.weights, torch.Tensor) else self.weights
-    lbfgs = minimize(self.objective, initial_weights, method="L-BFGS-B")
-    self.weights = torch.tensor(lbfgs.x, requires_grad=True, dtype=torch.float32)
-    a, b = self.diff_cal(self.weights.detach().numpy())
+    s = self.weights - self.last_weights
+    y = gradient - self.last_gradient
+    ys = np.dot(y, s)
+
+    if ys > 1e-10:
+      self.s_history.append(s)
+      self.y_history.append(y)
+
+    q = gradient.copy()
+    alphas = []
+
+    for s_i, y_i in zip(reversed(self.s_history), reversed(self.y_history)):
+      rho_i = 1.0 / np.dot(y_i, s_i)
+      alpha_i = rho_i * np.dot(s_i, q)
+      alphas.append(alpha_i)
+      q -= alpha_i * y_i
+
+    if len(self.y_history) > 0:
+      gamma = np.dot(self.s_history[-1], self.y_history[-1]) / np.dot(self.y_history[-1], self.y_history[-1])
+    else:
+      gamma = 1.0
+
+    r = gamma * q
+    for (s_i, y_i), alpha_i in zip(zip(self.s_history, self.y_history), reversed(alphas)):
+      rho_i = 1.0 / np.dot(y_i, s_i)
+      beta = rho_i * np.dot(y_i, r)
+      r += s_i * (alpha_i - beta)
+
+    update_direction = -r
+    self.last_weights = self.weights.copy()
+    self.last_gradient = gradient.copy()
+    self.weights += self.lr * update_direction
+
+    a, b = self.diff_cal(self.weights)
     return a, b
 
-  # -------------------DEBUG MODE----------------------- #
-
+  # reference: https://docs.scipy.org/doc/scipy/reference/optimize.minimize-neldermead.html
   def nelder_mead(self):
     res = minimize(
       self.objective,
