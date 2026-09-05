@@ -326,7 +326,6 @@ class LogisticRegression:
     return a, b
 
   def adamw(self, beta1=0.9, beta2=0.999, weight_decay=0.01, device=device):
-
     self.t += 1
     gradient = self.gradient(self.weights)
     self.m = beta1 * self.m + (1 - beta1) * gradient
